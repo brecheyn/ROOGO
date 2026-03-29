@@ -1,0 +1,207 @@
+<div class="list-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <div class="header-eyebrow">Achats</div>
+      <h1>Commandes</h1>
+      <div class="header-meta">
+        <span class="status-dot"></span>
+        <span>{{ orderings.length }} commande(s)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadOrderings()">
+        <mat-icon>refresh</mat-icon> Actualiser
+      </button>
+      <button class="action-btn add" (click)="createOrdering()">
+        <mat-icon>add</mat-icon> Nouvelle commande
+      </button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total"><mat-icon>list_alt</mat-icon></div>
+      <div>
+        <div class="stat-label">Total</div>
+        <div class="stat-value">{{ getTotalCommandes() }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon pending"><mat-icon>hourglass_empty</mat-icon></div>
+      <div>
+        <div class="stat-label">En attente</div>
+        <div class="stat-value">{{ getCommandesEnAttente() }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon received"><mat-icon>check_circle</mat-icon></div>
+      <div>
+        <div class="stat-label">Reçues</div>
+        <div class="stat-value">{{ getCommandesRecues() }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon montant"><mat-icon>payments</mat-icon></div>
+      <div>
+        <div class="stat-label">Montant total</div>
+        <div class="stat-value">{{ getTotalMontant() | number:'1.0-0' }} F</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="success-banner" *ngIf="successMsg">
+    <mat-icon>check_circle</mat-icon><span>{{ successMsg }}</span>
+  </div>
+  <div class="error-banner" *ngIf="errorMsg">
+    <mat-icon>error_outline</mat-icon><span>{{ errorMsg }}</span>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-wrap">
+    <div class="search-bar">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input type="text" placeholder="Rechercher article ou fournisseur..."
+        [(ngModel)]="searchTerm" (input)="applyFilter()" />
+      <button class="clear-btn" *ngIf="searchTerm || filterStatus" (click)="resetFilters()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="filter-select-wrap">
+      <mat-icon class="filter-icon">filter_list</mat-icon>
+      <select [(ngModel)]="filterStatus" (change)="applyFilter()">
+        <option value="">Toutes</option>
+        <option value="pending">En attente</option>
+        <option value="received">Reçues</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-wrap" *ngIf="loading"><div class="spinner"></div></div>
+
+  <!-- TABLE -->
+  <div class="card" *ngIf="!loading && filtered.length > 0">
+    <div class="card-body no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Article</th>
+            <th>Fournisseur</th>
+            <th>Quantité</th>
+            <th>Prix</th>
+            <th>Date commande</th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of filtered" (click)="viewOrdering(o)" class="clickable-row">
+            <td class="id-cell">#{{ o.id }}</td>
+            <td>
+              <div class="article-cell">
+                <div class="article-icon"><mat-icon>inventory_2</mat-icon></div>
+                <span>{{ o.name_article || '—' }}</span>
+              </div>
+            </td>
+            <td class="muted-cell">{{ o.supplier_name || '—' }}</td>
+            <td><span class="qty-badge">{{ o.quantity }}</span></td>
+            <td class="montant-cell">{{ o.price | number:'1.0-0' }} F</td>
+            <td class="muted-cell">{{ o.order_date | date:'dd MMM yyyy' }}</td>
+            <td>
+              <span class="status-badge"
+                [class.status-success]="isReceived(o)"
+                [class.status-warning]="!isReceived(o)">
+                {{ isReceived(o) ? 'Reçue' : 'En attente' }}
+              </span>
+            </td>
+            <td (click)="$event.stopPropagation()">
+              <div class="row-actions">
+                <button class="icon-btn view" (click)="viewOrdering(o)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button class="icon-btn receive"
+                  [class.done]="isReceived(o)"
+                  [disabled]="isReceived(o) || receivingId === o.id"
+                  (click)="receiveOrdering(o)"
+                  [title]="isReceived(o) ? 'Déjà reçue' : 'Marquer comme reçue'">
+                  <span class="btn-spinner sm" *ngIf="receivingId === o.id"></span>
+                  <mat-icon *ngIf="receivingId !== o.id">{{ isReceived(o) ? 'check' : 'local_shipping' }}</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="card" *ngIf="!loading && filtered.length === 0">
+    <div class="empty-state">
+      <mat-icon>local_shipping</mat-icon>
+      <p>Aucune commande trouvée</p>
+      <button class="action-btn add" (click)="createOrdering()">
+        <mat-icon>add</mat-icon> Passer une commande
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DÉTAIL COMMANDE -->
+<div class="modal-overlay" *ngIf="selectedOrdering" (click)="closeDetail()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Commande #{{ selectedOrdering.id }}</h2>
+        <span class="status-badge"
+          [class.status-success]="isReceived(selectedOrdering)"
+          [class.status-warning]="!isReceived(selectedOrdering)">
+          {{ isReceived(selectedOrdering) ? 'Reçue' : 'En attente' }}
+        </span>
+      </div>
+      <button class="modal-close" (click)="closeDetail()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Article</div>
+          <div class="detail-value">{{ selectedOrdering.name_article || '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Fournisseur</div>
+          <div class="detail-value">{{ selectedOrdering.supplier_name || '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Quantité</div>
+          <div class="detail-value highlight">{{ selectedOrdering.quantity }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Prix total</div>
+          <div class="detail-value highlight">{{ selectedOrdering.price | number:'1.0-0' }} F</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Date de commande</div>
+          <div class="detail-value">{{ selectedOrdering.order_date | date:'dd MMM yyyy HH:mm' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Date de réception</div>
+          <div class="detail-value">{{ selectedOrdering.receved_date ? (selectedOrdering.receved_date | date:'dd MMM yyyy') : '—' }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="closeDetail()">Fermer</button>
+      <button class="action-btn receive-btn"
+        *ngIf="!isReceived(selectedOrdering)"
+        (click)="receiveOrdering(selectedOrdering); closeDetail()">
+        <mat-icon>local_shipping</mat-icon> Marquer reçue
+      </button>
+    </div>
+  </div>
+</div>

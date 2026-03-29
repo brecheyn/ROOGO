@@ -1,0 +1,34 @@
+{
+  "name": "roogo-backend",
+  "version": "2.0.0",
+  "description": "Backend API pour le système de gestion de stock roogo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node roogo-backend/server.js",
+    "dev": "nodemon roogo-backend/server.js"
+  },
+  "keywords": [
+    "stock",
+    "gestion",
+    "api",
+    "express"
+  ],
+  "author": "nadinga-yienouyaba",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "exceljs": "^4.4.0",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.12",
+    "pdfkit": "^0.17.2",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

@@ -1,0 +1,116 @@
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<div class="client-form-container">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <div class="header-eyebrow">{{ isEditMode ? 'Modifier' : 'Nouveau' }}</div>
+        <h1>{{ isEditMode ? 'Modifier le client' : 'Ajouter un client' }}</h1>
+        <div class="header-meta">
+          <span class="status-dot"></span>
+          <span>{{ isEditMode ? 'Mise à jour des informations' : 'Remplissez le formulaire' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- FORMULAIRE -->
+  <div class="card form-card" *ngIf="!loading">
+    <div class="card-header">
+      <span class="card-title">Informations du client</span>
+    </div>
+    <div class="card-body">
+
+      <!-- Erreur -->
+      <div class="error-banner" *ngIf="errorMsg">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMsg }}</span>
+      </div>
+
+      <!-- Succès -->
+      <div class="success-banner" *ngIf="successMsg">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ successMsg }}</span>
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Nom <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.name">
+            <mat-icon input-icon>person</mat-icon>
+            <input
+              type="text"
+              [(ngModel)]="form.name"
+              placeholder="Ex: Diallo"
+              (input)="clearError('name')"
+            />
+          </div>
+          <span class="field-error" *ngIf="errors.name">{{ errors.name }}</span>
+        </div>
+
+        <div class="form-group">
+          <label>Prénom <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.surname">
+            <mat-icon input-icon>person_outline</mat-icon>
+            <input
+              type="text"
+              [(ngModel)]="form.surname"
+              placeholder="Ex: Mamadou"
+              (input)="clearError('surname')"
+            />
+          </div>
+          <span class="field-error" *ngIf="errors.surname">{{ errors.surname }}</span>
+        </div>
+
+        <div class="form-group">
+          <label>Téléphone</label>
+          <div class="input-wrap">
+            <mat-icon input-icon>phone</mat-icon>
+            <input
+              type="text"
+              [(ngModel)]="form.phone"
+              placeholder="Ex: +226 70 00 00 00"
+            />
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Adresse</label>
+          <div class="input-wrap">
+            <mat-icon input-icon>location_on</mat-icon>
+            <input
+              type="text"
+              [(ngModel)]="form.address"
+              placeholder="Ex: Secteur 15, Ouagadougou"
+            />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="form-actions">
+        <button class="action-btn" (click)="goBack()">
+          Annuler
+        </button>
+        <button class="action-btn submit" (click)="submit()" [disabled]="submitting">
+          <mat-icon> *ngIf="!submitting">{{ isEditMode ? 'save' : 'person_add' }}</mat-icon>
+          <span class="btn-spinner" *ngIf="submitting"></span>
+          {{ isEditMode ? 'Enregistrer' : 'Créer le client' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

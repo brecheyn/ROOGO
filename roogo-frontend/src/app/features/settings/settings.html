@@ -1,0 +1,423 @@
+<div class="settings-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <div class="header-eyebrow">Compte</div>
+      <h1>Paramètres</h1>
+      <div class="header-meta">
+        <span class="status-dot"></span>
+        <span>{{ profile.username }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrap">
+    <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">
+      <mat-icon>person</mat-icon> Profil
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'security'" (click)="activeTab = 'security'">
+      <mat-icon>lock</mat-icon> Sécurité
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'organization'" (click)="activeTab = 'organization'">
+      <mat-icon>business</mat-icon> Organisation
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'notifications'" (click)="activeTab = 'notifications'">
+      <mat-icon>notifications</mat-icon> Notifications
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'preferences'" (click)="activeTab = 'preferences'">
+      <mat-icon>tune</mat-icon> Préférences
+    </button>
+    <!-- Tab visible seulement pour Manager (role_id=2) -->
+    <button class="tab-btn" *ngIf="currentUser?.role_id === 2"
+      [class.active]="activeTab === 'employees'" (click)="activeTab = 'employees'; loadEmployees()">
+      <mat-icon>group</mat-icon> Employés
+    </button>
+  </div>
+
+  <!-- ═══════════════════════ PROFIL ═══════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'profile'">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Informations personnelles</span>
+      </div>
+      <div class="card-body">
+        <div class="avatar-section">
+          <div class="avatar-xl">{{ getUserInitials() }}</div>
+          <div>
+            <div class="avatar-name">{{ profile.username }}</div>
+            <div class="avatar-role">{{ profile.role }}</div>
+            <label class="upload-btn">
+              <mat-icon>photo_camera</mat-icon>
+              Changer la photo
+              <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+            </label>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom d'utilisateur</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">person</mat-icon>
+              <input type="text" [(ngModel)]="profile.username" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">email</mat-icon>
+              <input type="email" [(ngModel)]="profile.email" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Téléphone</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">phone</mat-icon>
+              <input type="text" [(ngModel)]="profile.phone" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Rôle</label>
+            <div class="input-wrap disabled">
+              <mat-icon class="input-icon">badge</mat-icon>
+              <input type="text" [value]="profile.role" disabled />
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button class="action-btn submit" (click)="saveProfile()">
+            <mat-icon>save</mat-icon> Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ SÉCURITÉ ═══════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'security'">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Changer le mot de passe</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid single">
+          <div class="form-group">
+            <label>Mot de passe actuel</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">lock</mat-icon>
+              <input type="password" [(ngModel)]="security.currentPassword" placeholder="••••••••" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">lock_open</mat-icon>
+              <input type="password" [(ngModel)]="security.newPassword" placeholder="••••••••" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Confirmer le mot de passe</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">lock_open</mat-icon>
+              <input type="password" [(ngModel)]="security.confirmPassword" placeholder="••••••••" />
+            </div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn submit" (click)="updatePassword()">
+            <mat-icon>save</mat-icon> Mettre à jour
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Sécurité avancée</span>
+      </div>
+      <div class="card-body">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Authentification à deux facteurs</div>
+            <div class="toggle-desc">Ajoute une couche de sécurité supplémentaire</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="security.twoFactorEnabled" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Notifications de connexion</div>
+            <div class="toggle-desc">Recevoir une alerte à chaque nouvelle connexion</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="security.loginNotifications" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ ORGANISATION ═══════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'organization'">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Informations de l'organisation</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom de l'entreprise</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">business</mat-icon>
+              <input type="text" [(ngModel)]="organization.name" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Secteur d'activité</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">category</mat-icon>
+              <select [(ngModel)]="organization.industry">
+                <option *ngFor="let i of industries" [value]="i.value">{{ i.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Taille</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">people</mat-icon>
+              <select [(ngModel)]="organization.size">
+                <option *ngFor="let s of companySizes" [value]="s.value">{{ s.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Ville</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">location_city</mat-icon>
+              <input type="text" [(ngModel)]="organization.city" />
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Adresse</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">location_on</mat-icon>
+              <input type="text" [(ngModel)]="organization.address" />
+            </div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn submit" (click)="saveOrganization()">
+            <mat-icon>save</mat-icon> Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ NOTIFICATIONS ═══════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'notifications'">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Préférences de notifications</span>
+      </div>
+      <div class="card-body">
+        <div class="toggle-row" *ngFor="let item of notificationItems">
+          <div>
+            <div class="toggle-label">{{ item.label }}</div>
+            <div class="toggle-desc">{{ item.desc }}</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="notifications[item.key]" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn submit" (click)="saveNotifications()">
+            <mat-icon>save</mat-icon> Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PRÉFÉRENCES ═══════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'preferences'">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Préférences générales</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Langue</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">language</mat-icon>
+              <select [(ngModel)]="preferences.language">
+                <option *ngFor="let l of languages" [value]="l.value">{{ l.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Fuseau horaire</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">schedule</mat-icon>
+              <select [(ngModel)]="preferences.timezone">
+                <option *ngFor="let t of timezones" [value]="t.value">{{ t.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Devise</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">payments</mat-icon>
+              <select [(ngModel)]="preferences.currency">
+                <option *ngFor="let c of currencies" [value]="c.value">{{ c.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Format de date</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">calendar_today</mat-icon>
+              <select [(ngModel)]="preferences.dateFormat">
+                <option *ngFor="let d of dateFormats" [value]="d.value">{{ d.label }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">Mode sombre</div>
+            <div class="toggle-desc">Interface en thème sombre</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" [(ngModel)]="preferences.darkMode" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn submit" (click)="savePreferences()">
+            <mat-icon>save</mat-icon> Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ EMPLOYÉS (Manager seulement) ═══════════════════════ -->
+  <div class="tab-content" *ngIf="activeTab === 'employees'">
+
+    <!-- Quota -->
+    <div class="quota-card">
+      <div class="quota-info">
+        <div class="quota-title">Comptes employés</div>
+        <div class="quota-sub">Vous pouvez créer jusqu'à 3 comptes employés</div>
+      </div>
+      <div class="quota-badges">
+        <div class="quota-badge" [class.used]="i < employeeCount" *ngFor="let i of [0,1,2]">
+          <mat-icon>{{ i < employeeCount ? 'person' : 'person_outline' }}</mat-icon>
+        </div>
+      </div>
+      <div class="quota-text">{{ employeeCount }}/3 utilisés</div>
+    </div>
+
+    <!-- Messages -->
+    <div class="success-banner" *ngIf="empSuccessMsg">
+      <mat-icon>check_circle</mat-icon><span>{{ empSuccessMsg }}</span>
+    </div>
+    <div class="error-banner" *ngIf="empErrorMsg">
+      <mat-icon>error_outline</mat-icon><span>{{ empErrorMsg }}</span>
+    </div>
+
+    <!-- Formulaire création -->
+    <div class="card" *ngIf="employeeCount < 3">
+      <div class="card-header">
+        <span class="card-title">Créer un compte employé</span>
+        <span class="card-badge">{{ 3 - employeeCount }} restant(s)</span>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nom d'utilisateur <span class="required">*</span></label>
+            <div class="input-wrap" [class.error]="empErrors.username">
+              <mat-icon class="input-icon">person</mat-icon>
+              <input type="text" [(ngModel)]="newEmployee.username"
+                placeholder="Ex: employe1" (input)="empErrors.username = ''" />
+            </div>
+            <span class="field-error" *ngIf="empErrors.username">{{ empErrors.username }}</span>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <div class="input-wrap">
+              <mat-icon class="input-icon">email</mat-icon>
+              <input type="email" [(ngModel)]="newEmployee.email" placeholder="email@exemple.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Mot de passe <span class="required">*</span></label>
+            <div class="input-wrap" [class.error]="empErrors.password">
+              <mat-icon class="input-icon">lock</mat-icon>
+              <input type="password" [(ngModel)]="newEmployee.password"
+                placeholder="••••••••" (input)="empErrors.password = ''" />
+            </div>
+            <span class="field-error" *ngIf="empErrors.password">{{ empErrors.password }}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn submit" (click)="createEmployee()" [disabled]="creatingEmployee">
+            <span class="btn-spinner" *ngIf="creatingEmployee"></span>
+            <mat-icon *ngIf="!creatingEmployee">person_add</mat-icon>
+            {{ creatingEmployee ? 'Création...' : 'Créer l\'employé' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Limite atteinte -->
+    <div class="card limit-card" *ngIf="employeeCount >= 3">
+      <div class="card-body">
+        <div class="limit-msg">
+          <mat-icon>check_circle</mat-icon>
+          <div>
+            <div class="limit-title">Limite atteinte</div>
+            <div class="limit-sub">Vous avez créé les 3 comptes employés autorisés.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des employés -->
+    <div class="card" *ngIf="employees.length > 0">
+      <div class="card-header">
+        <span class="card-title">Mes employés</span>
+        <span class="card-badge">{{ employees.length }}</span>
+      </div>
+      <div class="card-body no-top-pad">
+        <div class="employee-item" *ngFor="let emp of employees">
+          <div class="emp-avatar">{{ emp.username[0].toUpperCase() }}</div>
+          <div class="emp-info">
+            <div class="emp-name">{{ emp.username }}</div>
+            <div class="emp-detail">{{ emp.email || 'Pas d\'email' }} · {{ emp.store_name || 'Aucun magasin' }}</div>
+          </div>
+          <div class="emp-date">{{ emp.created_at | date:'dd MMM yyyy' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vide -->
+    <div class="card" *ngIf="employees.length === 0 && !loadingEmployees">
+      <div class="empty-state">
+        <mat-icon>group_off</mat-icon>
+        <p>Aucun employé créé pour l'instant</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>

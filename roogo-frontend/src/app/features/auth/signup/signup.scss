@@ -1,0 +1,415 @@
+// ============================================
+// ROGO - SIGNUP SCSS
+// ============================================
+@use 'sass:color';
+
+$primary:       #2d5c4a;
+$primary-light: #3d7a62;
+$primary-dark:  #1e3d31;
+$accent:        #d4a853;
+$accent-light:  #e8c27a;
+$surface:       #ffffff;
+$text:          #1a1a1a;
+$text-muted:    #8a8a8a;
+$border:        #e8e8e8;
+$bg:            #f7f7f5;
+$error:         #d93025;
+$success:       #27ae60;
+
+// ============================================
+// PAGE
+// ============================================
+.signup-page {
+  min-height: 100vh;
+  background: $bg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+// ============================================
+// BLOC CENTRAL
+// ============================================
+.signup-box {
+  width: 100%;
+  max-width: 460px;
+  background: $surface;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+}
+
+// ============================================
+// ENTÊTE VERTE
+// ============================================
+.signup-logo {
+  background: linear-gradient(145deg, $primary 0%, $primary-dark 100%);
+  padding: 36px 40px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px; border-radius: 50%;
+    background: rgba($accent, 0.1);
+  }
+  &::after {
+    content: '';
+    position: absolute; bottom: -30px; left: -30px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(white, 0.04);
+  }
+
+  img {
+    height: 122px; width: auto;
+    position: relative; z-index: 1;
+    filter: brightness(1.1) drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+  }
+
+  p {
+    color: rgba(white, 0.75);
+    font-size: 13px; margin: 10px 0 0;
+    letter-spacing: 2px; text-transform: uppercase;
+    font-weight: 600; position: relative; z-index: 1;
+  }
+}
+
+// ============================================
+// CORPS
+// ============================================
+.signup-body {
+  padding: 32px 36px 28px;
+}
+
+// ============================================
+// STEPPER
+// ============================================
+.steps-indicator {
+  display: flex; align-items: center; margin-bottom: 6px;
+
+  .step-dot {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid $border; background: $surface;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: $text-muted;
+    transition: all 0.3s ease; flex-shrink: 0;
+    position: relative; z-index: 1;
+
+    &.active {
+      border-color: $primary; background: $primary; color: white;
+      box-shadow: 0 0 0 4px rgba($primary, 0.12);
+    }
+    &.done {
+      border-color: $primary; background: $primary; color: white;
+      span { display: none; }
+      &::after { content: '✓'; font-size: 14px; font-weight: 800; color: white; }
+    }
+  }
+
+  .step-line {
+    flex: 1; height: 2px; background: $border;
+    transition: background 0.4s ease; margin: 0 -1px;
+    &.done { background: $primary; }
+  }
+}
+
+.steps-labels {
+  display: flex; justify-content: space-between;
+  margin-bottom: 24px; padding: 0 2px;
+
+  span {
+    flex: 1; text-align: center;
+    font-size: 11px; font-weight: 500; color: $text-muted;
+    transition: all 0.3s;
+    &.active { color: $primary; font-weight: 700; }
+    &.done   { color: $primary; }
+    &:first-child { text-align: left; }
+    &:last-child  { text-align: right; }
+  }
+}
+
+.step-title {
+  font-size: 19px; font-weight: 700; color: $text; margin: 0 0 18px;
+}
+
+.full-width { width: 100%; }
+
+// ============================================
+// MATERIAL FIELDS — Fix MDC transparent text
+// ============================================
+::ng-deep .signup-box {
+
+  .mat-mdc-form-field {
+    width: 100%;
+    margin-bottom: 6px;
+
+    // Fond blanc sur le wrapper
+    .mat-mdc-text-field-wrapper {
+      background-color: $surface !important;
+    }
+
+    // Bordures
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: $border !important;
+    }
+
+    // Focus
+    &.mat-focused {
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: $primary !important;
+        border-width: 2px !important;
+      }
+      .mat-mdc-floating-label { color: $primary !important; }
+      .mat-mdc-form-field-icon-prefix mat-icon { color: $primary !important; }
+    }
+
+    .mat-mdc-form-field-icon-prefix mat-icon {
+      color: $text-muted; transition: color 0.2s;
+    }
+
+    // ── INPUT texte ──────────────────────────────────────────────────────────
+    input.mat-mdc-input-element {
+      color: $text !important;
+      caret-color: $primary !important;
+    }
+
+    // ── SELECT : le vrai problème ────────────────────────────────────────────
+    // MDC met color: inherit sur .mdc-list-item__primary-text
+    // et le parent a souvent color: transparent — on force tout
+
+    .mat-mdc-select {
+      // valeur affichée dans le champ fermé
+      .mat-mdc-select-value-text,
+      .mat-mdc-select-value,
+      .mat-mdc-select-min-line {
+        color: $text !important;
+        opacity: 1 !important;
+      }
+
+      // placeholder
+      .mat-mdc-select-placeholder {
+        color: $text-muted !important;
+        opacity: 1 !important;
+      }
+
+      // flèche
+      .mat-mdc-select-arrow svg {
+        fill: $text-muted !important;
+      }
+    }
+  }
+}
+
+// ── Overlay dropdown — rendu HORS du composant donc pas de ::ng-deep parent ──
+// On cible les classes globales directement
+
+.mat-mdc-select-panel {
+  background: $surface !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14) !important;
+  border: 1px solid $border !important;
+  padding: 6px !important;
+}
+
+// Chaque option
+mat-option.mat-mdc-option {
+  border-radius: 8px !important;
+  margin: 1px 0 !important;
+
+  // ← LE FIX PRINCIPAL : texte forcé visible
+  .mdc-list-item__primary-text {
+    color: $text !important;
+    opacity: 1 !important;
+    font-size: 14px !important;
+  }
+
+  // hover
+  &:hover:not(.mdc-list-item--disabled) {
+    background: rgba($primary, 0.07) !important;
+    .mdc-list-item__primary-text { color: $primary !important; }
+  }
+
+  // sélectionné
+  &.mdc-list-item--selected {
+    background: rgba($primary, 0.1) !important;
+    .mdc-list-item__primary-text {
+      color: $primary !important;
+      font-weight: 600 !important;
+    }
+    // checkmark
+    .mat-pseudo-checkbox-full {
+      border-color: $primary !important;
+      &.mat-pseudo-checkbox-checked { background-color: $primary !important; }
+    }
+  }
+
+  // actif (keyboard focus)
+  &.mat-mdc-option-active {
+    background: rgba($primary, 0.07) !important;
+    .mdc-list-item__primary-text { color: $primary !important; }
+  }
+}
+
+
+// ============================================
+// FORCE MOT DE PASSE
+// ============================================
+.strength-bar {
+  display: flex; align-items: center; gap: 10px; margin: -2px 0 14px;
+
+  .bars { display: flex; gap: 4px;
+    .bar {
+      width: 52px; height: 3px; border-radius: 2px;
+      background: $border; transition: background 0.3s;
+      &.weak   { background: #e74c3c; }
+      &.medium { background: $accent; }
+      &.strong { background: $success; }
+    }
+  }
+
+  span {
+    font-size: 11px; font-weight: 700; color: $text-muted;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+}
+
+// ============================================
+// PLANS
+// ============================================
+.plans-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+
+.plan-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px solid $border; border-radius: 12px;
+  cursor: pointer; transition: all 0.2s ease; background: $surface;
+
+  &:hover {
+    border-color: $primary-light;
+    background: rgba($primary, 0.02);
+  }
+
+  &.selected {
+    border-color: $primary; background: rgba($primary, 0.04);
+    box-shadow: 0 0 0 3px rgba($primary, 0.08);
+    .plan-radio mat-icon { color: $primary; }
+    .plan-name { color: $primary; }
+  }
+
+  &.popular.selected {
+    border-color: $accent; box-shadow: 0 0 0 3px rgba($accent, 0.1);
+    .plan-radio mat-icon { color: $accent; }
+  }
+
+  .plan-radio mat-icon {
+    font-size: 20px; width: 20px; height: 20px;
+    color: $border; transition: color 0.2s;
+  }
+
+  .plan-info {
+    display: flex; flex-direction: column; gap: 2px;
+
+    .plan-top { display: flex; align-items: center; gap: 8px; }
+    .plan-name  { font-size: 14px; font-weight: 700; color: $text; transition: color 0.2s; }
+    .plan-badge {
+      font-size: 10px; font-weight: 700;
+      background: rgba($accent, 0.15);
+      color: color.adjust($accent, $lightness: -18%);
+      padding: 2px 8px; border-radius: 6px;
+    }
+    .plan-price { font-size: 13px; font-weight: 600; color: $primary; }
+    .plan-desc  { font-size: 11px; color: $text-muted; }
+  }
+}
+
+// ============================================
+// ERREUR
+// ============================================
+.error-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: color.scale($error, $lightness: 88%);
+  border: 1px solid color.scale($error, $lightness: 60%);
+  border-radius: 10px; padding: 10px 14px;
+  margin-bottom: 14px; color: $error; font-size: 13px;
+  mat-icon { font-size: 18px; width: 18px; flex-shrink: 0; }
+}
+
+// ============================================
+// BOUTONS
+// ============================================
+.btn-row { display: flex; gap: 10px; margin-top: 8px; }
+
+.action-btn {
+  flex: 1;
+  height: 48px !important; border-radius: 12px !important;
+  font-size: 15px !important; font-weight: 700 !important;
+  background: $primary !important; color: white !important;
+  box-shadow: 0 4px 14px rgba($primary, 0.25) !important;
+  display: flex !important; align-items: center !important;
+  justify-content: center !important; gap: 8px !important;
+  transition: all 0.25s ease !important;
+  mat-icon { font-size: 18px; }
+
+  &:hover:not([disabled]) {
+    background: $primary-light !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba($primary, 0.3) !important;
+  }
+  &.submit {
+    background: $accent !important; color: $primary-dark !important;
+    box-shadow: 0 4px 14px rgba($accent, 0.3) !important;
+    &:hover:not([disabled]) {
+      background: $accent-light !important;
+      box-shadow: 0 8px 20px rgba($accent, 0.35) !important;
+    }
+  }
+  &[disabled] { opacity: 0.45 !important; box-shadow: none !important; }
+}
+
+.back-btn {
+  height: 48px !important; border-radius: 12px !important;
+  font-size: 14px !important; font-weight: 600 !important;
+  border-color: $border !important; color: $text-muted !important;
+  min-width: 110px !important; background: $bg !important;
+  display: flex !important; align-items: center !important;
+  justify-content: center !important; gap: 6px !important;
+  transition: all 0.2s !important;
+
+  &:hover {
+    border-color: $primary !important; color: $primary !important;
+    background: rgba($primary, 0.04) !important;
+  }
+}
+
+// ============================================
+// LIEN + FOOTER
+// ============================================
+.login-link {
+  text-align: center; font-size: 14px; color: $text-muted; margin: 20px 0 0;
+  a { color: $primary; font-weight: 700; text-decoration: none;
+      &:hover { text-decoration: underline; } }
+}
+
+.page-footer {
+  margin-top: 20px; font-size: 12px;
+  color: color.scale($primary, $lightness: 25%); text-align: center;
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+@media (max-width: 480px) {
+  .signup-logo { padding: 28px 24px 24px; }
+  .signup-body { padding: 24px 20px 20px; }
+  .step-title  { font-size: 17px; }
+  .btn-row     { flex-direction: column-reverse; }
+  .back-btn    { width: 100% !important; }
+}

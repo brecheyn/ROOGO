@@ -1,0 +1,254 @@
+<div class="reports-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <div class="header-eyebrow">Analyse</div>
+      <h1>Rapports IA</h1>
+      <div class="header-meta">
+        <span class="status-dot"></span>
+        <span>{{ reports.length }} rapport(s) généré(s)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadReports()" [disabled]="loadingReports">
+        <mat-icon [class.rotating]="loadingReports">refresh</mat-icon>
+        Actualiser
+      </button>
+      <button class="action-btn generate" (click)="generateAIReport()" [disabled]="generatingAI">
+        <span class="btn-spinner" *ngIf="generatingAI"></span>
+        <mat-icon *ngIf="!generatingAI">auto_awesome</mat-icon>
+        {{ generatingAI ? 'Analyse en cours...' : 'Générer un rapport IA' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="success-banner" *ngIf="successMsg">
+    <mat-icon>check_circle</mat-icon>
+    <span>{{ successMsg }}</span>
+  </div>
+  <div class="error-banner" *ngIf="errorMsg">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ errorMsg }}</span>
+  </div>
+
+  <!-- RAPPORT IA FRAIS (juste généré) -->
+  <div class="ai-result-card" *ngIf="aiReport">
+    <div class="ai-result-header">
+      <div class="ai-badge">
+        <mat-icon>auto_awesome</mat-icon>
+        Analyse IA
+      </div>
+      <span class="ai-date">{{ aiReport.rapport.prompt_date | date:'dd MMM yyyy HH:mm' }}</span>
+    </div>
+
+    <h2 class="ai-titre">{{ aiReport.rapport.titre }}</h2>
+
+    <!-- Stats rapides -->
+    <div class="ai-stats-grid" *ngIf="aiReport.details?.statistics">
+      <div class="ai-stat">
+        <div class="ai-stat-icon sales"><mat-icon>shopping_cart</mat-icon></div>
+        <div class="ai-stat-value">{{ aiReport.details.statistics.ventes_7j || 0 }}</div>
+        <div class="ai-stat-label">Ventes (7j)</div>
+      </div>
+      <div class="ai-stat">
+        <div class="ai-stat-icon ca"><mat-icon>payments</mat-icon></div>
+        <div class="ai-stat-value">{{ (aiReport.details.statistics.ca_7j || 0) | number:'1.0-0' }} F</div>
+        <div class="ai-stat-label">CA (7j)</div>
+      </div>
+      <div class="ai-stat">
+        <div class="ai-stat-icon panier"><mat-icon>receipt</mat-icon></div>
+        <div class="ai-stat-value">{{ (aiReport.details.statistics.panier_moyen || 0) | number:'1.0-0' }} F</div>
+        <div class="ai-stat-label">Panier moyen</div>
+      </div>
+      <div class="ai-stat">
+        <div class="ai-stat-icon stock"><mat-icon>warning</mat-icon></div>
+        <div class="ai-stat-value">{{ aiReport.details.low_stock?.length || 0 }}</div>
+        <div class="ai-stat-label">Alertes stock</div>
+      </div>
+    </div>
+
+    <div class="ai-sections">
+
+      <!-- Bestsellers -->
+      <div class="ai-section" *ngIf="aiReport.details?.bestsellers?.length > 0">
+        <div class="ai-section-title">
+          <mat-icon>trending_up</mat-icon>
+          Top articles
+        </div>
+        <div class="ai-items">
+          <div class="ai-item success" *ngFor="let item of aiReport.details.bestsellers; let i = index">
+            <div class="item-rank">{{ i + 1 }}</div>
+            <div class="item-info">
+              <div class="item-name">{{ item.name_article }}</div>
+              <div class="item-detail">{{ item.nombre_ventes }} ventes · {{ item.chiffre_affaires | number:'1.0-0' }} F</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock faible -->
+      <div class="ai-section" *ngIf="aiReport.details?.low_stock?.length > 0">
+        <div class="ai-section-title danger">
+          <mat-icon>inventory</mat-icon>
+          Stock faible
+        </div>
+        <div class="ai-items">
+          <div class="ai-item danger" *ngFor="let item of aiReport.details.low_stock">
+            <mat-icon class="item-icon">warning</mat-icon>
+            <div class="item-info">
+              <div class="item-name">{{ item.name_article }}</div>
+              <div class="item-detail">Stock: {{ item.quantity }} · {{ item.unit_price | number:'1.0-0' }} F/u</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expiration -->
+      <div class="ai-section" *ngIf="aiReport.details?.expiring_soon?.length > 0">
+        <div class="ai-section-title warning">
+          <mat-icon>schedule</mat-icon>
+          Expiration proche
+        </div>
+        <div class="ai-items">
+          <div class="ai-item warning" *ngFor="let item of aiReport.details.expiring_soon">
+            <mat-icon class="item-icon">hourglass_empty</mat-icon>
+            <div class="item-info">
+              <div class="item-name">{{ item.name_article }}</div>
+              <div class="item-detail">Expire le {{ item.expiration_date | date:'dd MMM yyyy' }} · Stock: {{ item.quantity }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Prévisions -->
+      <div class="ai-section prevision-section">
+        <div class="ai-section-title">
+          <mat-icon>insights</mat-icon>
+          Prévisions & Recommandations
+        </div>
+        <div class="prevision-text">
+          <p *ngFor="let line of getPrevisionLines(aiReport.rapport.ia_prevision)"
+             [class.recommendation]="line.startsWith('-')"
+             [class.urgent]="line.includes('URGENT') || line.includes('ATTENTION')">
+            {{ line }}
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOADING GÉNÉRATION -->
+  <div class="generating-card" *ngIf="generatingAI">
+    <div class="generating-animation">
+      <div class="orbit"></div>
+      <mat-icon class="generating-icon">auto_awesome</mat-icon>
+    </div>
+    <div class="generating-text">Analyse en cours...</div>
+    <div class="generating-sub">Interrogation de la base de données et génération des insights</div>
+  </div>
+
+  <!-- HISTORIQUE RAPPORTS -->
+  <div class="section-divider">
+    <span>Historique des rapports</span>
+  </div>
+
+  <div class="loading-wrap" *ngIf="loadingReports">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="reports-grid" *ngIf="!loadingReports && reports.length > 0">
+    <div class="report-card" *ngFor="let report of reports" (click)="viewReport(report)">
+      <div class="report-card-header">
+        <div class="report-icon"><mat-icon>description</mat-icon></div>
+        <div class="report-meta">
+          <div class="report-titre">{{ report.titre }}</div>
+          <div class="report-date">{{ report.prompt_date | date:'dd MMM yyyy HH:mm' }}</div>
+          <div class="report-author">Par {{ report.username }}</div>
+        </div>
+      </div>
+      <div class="report-preview">{{ report.ia_prevision | slice:0:120 }}...</div>
+      <div class="report-actions" (click)="$event.stopPropagation()">
+        <button class="icon-btn view" (click)="viewReport(report)">
+          <mat-icon>visibility</mat-icon>
+        </button>
+        <button class="icon-btn delete" (click)="deleteReport(report.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="!loadingReports && reports.length === 0 && !aiReport">
+    <div class="empty-state">
+      <mat-icon>assessment</mat-icon>
+      <p>Aucun rapport généré</p>
+      <button class="action-btn generate" (click)="generateAIReport()">
+        <mat-icon>auto_awesome</mat-icon>
+        Générer mon premier rapport
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL RAPPORT DETAIL -->
+<div class="modal-overlay" *ngIf="selectedReport" (click)="closeReport()">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>{{ selectedReport.titre }}</h2>
+        <div class="modal-meta">{{ selectedReport.prompt_date | date:'dd MMM yyyy HH:mm' }} · Par {{ selectedReport.username }}</div>
+      </div>
+      <button class="modal-close" (click)="closeReport()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-section" *ngIf="selectedReport.bestseller_article">
+        <div class="modal-section-title">
+          <mat-icon>trending_up</mat-icon> Top articles
+        </div>
+        <div class="modal-text">{{ selectedReport.bestseller_article }}</div>
+      </div>
+
+      <div class="modal-section" *ngIf="selectedReport.badselle_article">
+        <div class="modal-section-title">
+          <mat-icon>trending_down</mat-icon> Articles peu vendus
+        </div>
+        <div class="modal-text">{{ selectedReport.badselle_article }}</div>
+      </div>
+
+      <div class="modal-section" *ngIf="selectedReport.approvions_article">
+        <div class="modal-section-title danger">
+          <mat-icon>inventory</mat-icon> À réapprovisionner
+        </div>
+        <div class="modal-text danger">{{ selectedReport.approvions_article }}</div>
+      </div>
+
+      <div class="modal-section" *ngIf="selectedReport.ia_prevision">
+        <div class="modal-section-title">
+          <mat-icon>insights</mat-icon> Prévisions IA
+        </div>
+        <div class="prevision-text">
+          <p *ngFor="let line of getPrevisionLines(selectedReport.ia_prevision)"
+             [class.recommendation]="line.startsWith('-')"
+             [class.urgent]="line.includes('URGENT') || line.includes('ATTENTION')">
+            {{ line }}
+          </p>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="closeReport()">Fermer</button>
+      <button class="action-btn delete-btn" (click)="deleteReport(selectedReport.id)">
+        <mat-icon>delete</mat-icon>
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+/* Fix mat-form-field label flottant MDC */
+.mat-mdc-form-field .mdc-floating-label {
+  will-change: transform;
+}
+
+.mat-mdc-form-field.mat-focused .mdc-floating-label,
+.mat-mdc-form-field .mdc-floating-label--float-above {
+  transform: translateY(-106%) scale(0.75) !important;
+  color: #2d5c4a !important;
+}
+
+.mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control {
+  color: #1a1a1a !important;
+}

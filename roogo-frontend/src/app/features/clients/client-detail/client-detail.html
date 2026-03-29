@@ -1,0 +1,185 @@
+<div class="client-detail-container" *ngIf="client">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <div class="header-eyebrow">Fiche Client</div>
+        <h1>{{ client.name }} {{ client.surname }}</h1>
+        <div class="header-meta">
+          <span class="status-dot"></span>
+          <span>Client #{{ client.id }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="action-btn edit" (click)="openEditModal()">
+        <mat-icon>edit</mat-icon>
+        Modifier
+      </button>
+      <button class="action-btn delete" (click)="confirmDelete()">
+        <mat-icon>delete</mat-icon>
+        Supprimer
+      </button>
+    </div>
+  </div>
+
+  <!-- CARDS INFO -->
+  <div class="info-grid">
+
+    <!-- Avatar + infos principales -->
+    <div class="card profile-card">
+      <div class="card-body">
+        <div class="avatar-wrap">
+          <div class="avatar-lg">{{ client.name[0] }}{{ client.surname[0] }}</div>
+          <div class="avatar-info">
+            <div class="client-fullname">{{ client.name }} {{ client.surname }}</div>
+            <div class="client-id">ID : {{ client.id }}</div>
+          </div>
+        </div>
+
+        <div class="info-list">
+          <div class="info-row">
+            <mat-icon info-icon>phone</mat-icon>
+            <div>
+              <div class="info-label">Téléphone</div>
+              <div class="info-value">{{ client.phone || '—' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <mat-icon info-icon>location_on</mat-icon>
+            <div>
+              <div class="info-label">Adresse</div>
+              <div class="info-value">{{ client.address || '—' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <mat-icon info-icon>calendar_today</mat-icon>
+            <div>
+              <div class="info-label">Inscrit le</div>
+              <div class="info-value">{{ client.created_at | date:'dd MMM yyyy' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="card stats-card">
+      <div class="card-header">
+        <span class="card-title">Statistiques</span>
+      </div>
+      <div class="card-body">
+        <div class="mini-stats">
+          <div class="mini-stat">
+            <div class="mini-icon ventes">
+              <mat-icon>shopping_cart</mat-icon>
+            </div>
+            <div class="mini-value">{{ totalVentes }}</div>
+            <div class="mini-label">Ventes</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-icon ca">
+              <mat-icon>payments</mat-icon>
+            </div>
+            <div class="mini-value">{{ totalCA | number:'1.0-0' }} F</div>
+            <div class="mini-label">Total CA</div>
+          </div>
+          <div class="mini-stat">
+            <div class="mini-icon panier">
+              <mat-icon>receipt</mat-icon>
+            </div>
+            <div class="mini-value">{{ moyennePanier | number:'1.0-0' }} F</div>
+            <div class="mini-label">Panier moy.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HISTORIQUE VENTES -->
+  <div class="card recent-sales-card">
+    <div class="card-header">
+      <span class="card-title">Historique des achats</span>
+      <span class="card-badge">{{ sales.length }} vente(s)</span>
+    </div>
+    <div class="card-body no-top-pad">
+      <div class="sales-table-wrap" *ngIf="sales.length > 0; else noSales">
+        <table class="sales-table mat-mdc-table">
+          <thead>
+            <tr class="mat-mdc-header-row">
+              <th class="mat-mdc-header-cell">#</th>
+              <th class="mat-mdc-header-cell">Article</th>
+              <th class="mat-mdc-header-cell">Quantité</th>
+              <th class="mat-mdc-header-cell">Montant</th>
+              <th class="mat-mdc-header-cell">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="mat-mdc-row" *ngFor="let sale of sales; let i = index">
+              <td class="mat-mdc-cell">{{ i + 1 }}</td>
+              <td class="mat-mdc-cell">{{ sale.name_article || '—' }}</td>
+              <td class="mat-mdc-cell">{{ sale.quantity }}</td>
+              <td class="mat-mdc-cell montant-cell">{{ sale.price | number:'1.0-0' }} F</td>
+              <td class="mat-mdc-cell date-cell">{{ sale.date_sale | date:'dd MMM yyyy' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noSales>
+        <div class="empty-state">
+          <mat-icon>shopping_bag</mat-icon>
+          <p>Aucun achat enregistré pour ce client</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+</div>
+
+<!-- LOADING -->
+<div class="loading-wrap" *ngIf="loading">
+  <div class="spinner"></div>
+</div>
+
+<!-- MODAL EDIT -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Modifier le client</h2>
+      <button class="modal-close" (click)="closeModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" [(ngModel)]="editForm.name" placeholder="Nom" />
+      </div>
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" [(ngModel)]="editForm.surname" placeholder="Prénom" />
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="text" [(ngModel)]="editForm.phone" placeholder="Téléphone" />
+      </div>
+      <div class="form-group">
+        <label>Adresse</label>
+        <input type="text" [(ngModel)]="editForm.address" placeholder="Adresse" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="closeModal()">Annuler</button>
+      <button class="action-btn edit" (click)="saveEdit()">
+        <mat-icon>save</mat-icon>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>

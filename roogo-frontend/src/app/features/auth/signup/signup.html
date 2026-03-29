@@ -1,0 +1,166 @@
+<div class="signup-page">
+  <div class="signup-box">
+
+    <!-- Entête verte avec logo -->
+    <div class="signup-logo">
+      <img [src]="assetsService.images.logo" alt="ROGO" />
+      <p>Gestion de Stock</p>
+    </div>
+
+    <!-- Corps du formulaire -->
+    <div class="signup-body">
+
+      <!-- Indicateur d'étapes -->
+      <div class="steps-indicator">
+        <div class="step-dot" [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+          <span>1</span>
+        </div>
+        <div class="step-line" [class.done]="currentStep > 1"></div>
+        <div class="step-dot" [class.active]="currentStep === 2" [class.done]="currentStep > 2">
+          <span>2</span>
+        </div>
+        <div class="step-line" [class.done]="currentStep > 2"></div>
+        <div class="step-dot" [class.active]="currentStep === 3">
+          <span>3</span>
+        </div>
+      </div>
+
+      <div class="steps-labels">
+        <span [class.active]="currentStep === 1" [class.done]="currentStep > 1">Compte</span>
+        <span [class.active]="currentStep === 2" [class.done]="currentStep > 2">Organisation</span>
+        <span [class.active]="currentStep === 3">Plan</span>
+      </div>
+
+      <!-- ======== ÉTAPE 1 ======== -->
+      <div *ngIf="currentStep === 1">
+        <h2 class="step-title">Informations de compte</h2>
+
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Nom d'utilisateur</mat-label>
+          <input matInput [(ngModel)]="formData.username"
+            placeholder="ex: amadou.diallo" autocomplete="username" />
+          <mat-icon matPrefix>person_outline</mat-icon>
+          <mat-error *ngIf="errors.username">{{ errors.username }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email professionnel</mat-label>
+          <input matInput type="email" [(ngModel)]="formData.email"
+            placeholder="votre@email.com" autocomplete="email" />
+          <mat-icon matPrefix>mail_outline</mat-icon>
+          <mat-error *ngIf="errors.email">{{ errors.email }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="formData.password"
+            placeholder="Minimum 8 caractères" autocomplete="new-password" />
+          <mat-icon matPrefix>lock_outline</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="showPassword = !showPassword">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="errors.password">{{ errors.password }}</mat-error>
+        </mat-form-field>
+
+        <div class="strength-bar" *ngIf="formData.password">
+          <div class="bars">
+            <div class="bar" [class.weak]="passwordStrength >= 1"></div>
+            <div class="bar" [class.medium]="passwordStrength >= 2"></div>
+            <div class="bar" [class.strong]="passwordStrength >= 3"></div>
+          </div>
+          <span>{{ passwordStrengthLabel }}</span>
+        </div>
+
+        <button mat-raised-button class="full-width action-btn" (click)="goToStep(2)">
+          Continuer <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+
+      <!-- ======== ÉTAPE 2 ======== -->
+      <div *ngIf="currentStep === 2">
+        <h2 class="step-title">Votre organisation</h2>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom de l'organisation</mat-label>
+          <input matInput [(ngModel)]="formData.organizationName"
+            placeholder="Nom de votre entreprise" autocomplete="organization" />
+          <mat-icon matPrefix>storefront</mat-icon>
+          <mat-error *ngIf="errors.organizationName">{{ errors.organizationName }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Secteur d'activité</mat-label>
+          <mat-select [(ngModel)]="formData.industry">
+            <mat-option *ngFor="let ind of industries" [value]="ind.value">
+              {{ ind.icon }} {{ ind.label }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matPrefix>category</mat-icon>
+          <mat-error *ngIf="errors.industry">{{ errors.industry }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Téléphone (optionnel)</mat-label>
+          <input matInput [(ngModel)]="formData.phone"
+            placeholder="+226 XX XX XX XX" autocomplete="tel" />
+          <mat-icon matPrefix>phone</mat-icon>
+        </mat-form-field>
+
+        <div class="btn-row">
+          <button mat-stroked-button class="back-btn" (click)="goToStep(1)">
+            <mat-icon>arrow_back</mat-icon> Retour
+          </button>
+          <button mat-raised-button class="action-btn" (click)="goToStep(3)">
+            Continuer <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- ======== ÉTAPE 3 ======== -->
+      <div *ngIf="currentStep === 3">
+        <h2 class="step-title">Choisissez votre plan</h2>
+
+        <div class="plans-list">
+          <div class="plan-item" *ngFor="let plan of plans"
+            [class.selected]="formData.plan === plan.value"
+            [class.popular]="plan.popular"
+            (click)="formData.plan = plan.value">
+            <div class="plan-radio">
+              <mat-icon>{{ formData.plan === plan.value ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+            </div>
+            <div class="plan-info">
+              <div class="plan-top">
+                <span class="plan-name">{{ plan.name }}</span>
+                <span class="plan-badge" *ngIf="plan.popular">⭐ Populaire</span>
+              </div>
+              <span class="plan-price">{{ plan.price }}</span>
+              <span class="plan-desc">{{ plan.desc }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="error-banner" *ngIf="errorMessage">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <div class="btn-row">
+          <button mat-stroked-button class="back-btn" (click)="goToStep(2)">
+            <mat-icon>arrow_back</mat-icon> Retour
+          </button>
+          <button mat-raised-button class="action-btn submit" (click)="onSubmit()" [disabled]="loading">
+            <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+            <mat-icon *ngIf="!loading">rocket_launch</mat-icon>
+            <span>{{ loading ? 'Création...' : 'Créer mon compte' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <p class="login-link">Déjà un compte ? <a routerLink="/login">Se connecter</a></p>
+
+    </div>
+  </div>
+
+  <p class="page-footer">🔒 Données sécurisées · &copy; 2026 ROGO</p>
+</div>

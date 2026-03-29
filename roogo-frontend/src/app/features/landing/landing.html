@@ -1,0 +1,223 @@
+<div class="landing-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="logo-container">
+        <img [src]="assetsService.images.logo" alt="roogo Logo" class="logo-image" />
+        <p class="tagline">Gestion de Stock</p>
+      </div>
+
+      <h1 class="hero-title">Gérez votre entreprise simplement</h1>
+      <p class="hero-subtitle">
+        La solution tout-en-un pour la gestion de votre commerce.<br />
+        Stock, ventes, clients et rapports en un seul endroit.
+      </p>
+
+      <div class="hero-actions">
+        <button mat-raised-button class="btn-primary" (click)="goToSignup()">
+          <mat-icon><a routerLink="/signup">rocket_launch</a></mat-icon>
+          Essai Gratuit
+        </button>
+        <button mat-stroked-button class="btn-secondary" (click)="goToLogin()">
+          <mat-icon><a routerLink="/login">login</a></mat-icon>
+          Se Connecter
+        </button>
+      </div>
+
+      <div class="trust-indicators">
+        <div class="indicator">
+          <mat-icon>check_circle</mat-icon>
+          <span>Pas de carte bancaire</span>
+        </div>
+        <div class="indicator">
+          <mat-icon>check_circle</mat-icon>
+          <span>Configuration en 2 minutes</span>
+        </div>
+        <div class="indicator">
+          <mat-icon>check_circle</mat-icon>
+          <span>Support en français</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll-indicator" (click)="scrollToSection('features')">
+      <mat-icon>keyboard_arrow_down</mat-icon>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+      <p class="section-subtitle">Une plateforme complète pour gérer votre commerce efficacement</p>
+
+      <div class="features-grid">
+        <mat-card *ngFor="let feature of features" class="feature-card">
+          <div class="feature-icon">
+            <mat-icon>{{ feature.icon }}</mat-icon>
+          </div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works-section">
+    <div class="container">
+      <h2 class="section-title">Comment ça marche ?</h2>
+
+      <div class="steps-container">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Inscrivez-vous gratuitement</h3>
+            <p>Créez votre compte en 2 minutes, sans carte bancaire</p>
+          </div>
+        </div>
+
+        <div class="step-arrow">
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Configurez votre entreprise</h3>
+            <p>Ajoutez vos articles, clients et collaborateurs</p>
+          </div>
+        </div>
+
+        <div class="step-arrow">
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Commencez à vendre</h3>
+            <p>Gérez vos ventes et suivez votre business en temps réel</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing-section">
+    <div class="container">
+      <h2 class="section-title">Choisissez votre plan</h2>
+      <p class="section-subtitle">Des tarifs adaptés à la taille de votre entreprise</p>
+
+      <div class="pricing-grid">
+        <mat-card
+          *ngFor="let plan of plans"
+          class="pricing-card"
+          [class.recommended]="plan.recommended"
+        >
+          <div class="recommended-badge" *ngIf="plan.recommended">⭐ Populaire</div>
+
+          <h3>{{ plan.name }}</h3>
+
+          <div class="price">
+            <span class="amount">{{ plan.price }}</span>
+            <span class="currency" *ngIf="plan.price !== '0'">FCFA</span>
+            <span class="period">{{ plan.period }}</span>
+          </div>
+
+          <ul class="features-list">
+            <li *ngFor="let feature of plan.features">
+              <mat-icon>check</mat-icon>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+
+          <button mat-raised-button class="select-plan-btn" (click)="goToSignup()">
+            Commencer
+          </button>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="testimonials-section">
+    <div class="container">
+      <h2 class="section-title">Ils nous font confiance</h2>
+
+      <div class="testimonials-grid">
+        <mat-card *ngFor="let testimonial of testimonials" class="testimonial-card">
+          <div class="testimonial-content">
+            <p class="comment">"{{ testimonial.comment }}"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="avatar">{{ testimonial.avatar }}</div>
+            <div class="author-info">
+              <div class="name">{{ testimonial.name }}</div>
+              <div class="business">{{ testimonial.business }}</div>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Prêt à transformer votre gestion ?</h2>
+      <p>Rejoignez des centaines d'entreprises qui utilisent roogo</p>
+      <button mat-raised-button class="btn-cta" (click)="goToSignup()">
+        <mat-icon>rocket_launch</mat-icon>
+        Commencer gratuitement
+      </button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-col">
+          <div class="logo-container1">
+            <img [src]="assetsService.images.logo" alt="roogo Logo" class="logo-image" />
+          </div>
+          <h4>roogo</h4>
+          <p>La solution de gestion pour votre commerce</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Produit</h4>
+          <ul>
+            <li><a (click)="scrollToSection('features')">Fonctionnalités</a></li>
+            <li><a (click)="scrollToSection('pricing')">Tarifs</a></li>
+            <li><a routerLink="/demo">Démo</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Support</h4>
+          <ul>
+            <li><a routerLink="/help">Centre d'aide</a></li>
+            <li><a routerLink="/contact">Contact</a></li>
+            <li><a routerLink="/docs">Documentation</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Légal</h4>
+          <ul>
+            <li><a routerLink="/terms">Conditions d'utilisation</a></li>
+            <li><a routerLink="/privacy">Confidentialité</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 roogo. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+</div>

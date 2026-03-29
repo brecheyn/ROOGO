@@ -1,0 +1,97 @@
+<div class="login-wrapper">
+
+  <!-- CÔTÉ GAUCHE : Logo sur fond vert -->
+  <div class="login-brand">
+    <div class="brand-content">
+      <img [src]="assetsService.images.logo" alt="ROGO" class="brand-logo" />
+      <p class="brand-tagline">Gestion de Stock</p>
+      <p class="brand-desc">La solution tout-en-un pour gérer votre commerce efficacement.</p>
+
+      <div class="brand-features">
+        <div class="brand-feature">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Gestion de stock en temps réel</span>
+        </div>
+        <div class="brand-feature">
+          <mat-icon>point_of_sale</mat-icon>
+          <span>Ventes et factures rapides</span>
+        </div>
+        <div class="brand-feature">
+          <mat-icon>analytics</mat-icon>
+          <span>Rapports et statistiques</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CÔTÉ DROIT : Formulaire sur fond blanc -->
+  <div class="login-form-side">
+    <div class="login-form-container">
+
+      <h2 class="form-title">Connexion</h2>
+      <p class="form-subtitle">Accédez à votre espace de gestion</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom d'utilisateur</mat-label>
+          <input
+            matInput
+            formControlName="username"
+            placeholder="ex: amadou.diallo"
+            autocomplete="username" />
+          <mat-icon matPrefix>person_outline</mat-icon>
+          <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+            Le nom d'utilisateur est requis
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Mot de passe</mat-label>
+          <input
+            matInput
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Votre mot de passe"
+            autocomplete="current-password" />
+          <mat-icon matPrefix>lock_outline</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="togglePassword()">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            Le mot de passe est requis
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-options">
+          <mat-checkbox formControlName="rememberMe">Se souvenir de moi</mat-checkbox>
+          <a routerLink="/auth/forgot-password" class="forgot-link">Mot de passe oublié ?</a>
+        </div>
+
+        <!-- Erreur globale -->
+        <div class="error-banner" *ngIf="errorMessage">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <button
+          mat-raised-button
+          type="submit"
+          class="full-width login-btn"
+          [disabled]="loading || loginForm.invalid">
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!loading">login</mat-icon>
+          <span>{{ loading ? 'Connexion en cours...' : 'Se connecter' }}</span>
+        </button>
+
+      </form>
+
+      <p class="register-link">
+        Pas encore de compte ?
+        <a routerLink="/signup">Créer un compte</a>
+      </p>
+
+    </div>
+  </div>
+
+</div>

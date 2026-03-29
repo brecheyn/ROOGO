@@ -1,0 +1,3 @@
+psql -U postgres -d roogo -f nouvelles_tables.sql
+
+

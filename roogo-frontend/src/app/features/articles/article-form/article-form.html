@@ -1,0 +1,81 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ data.isEditMode ? 'edit' : 'add_circle' }}</mat-icon>
+  {{ data.isEditMode ? 'Modifier l\'article' : 'Nouvel article' }}
+</h2>
+
+<mat-dialog-content>
+  <div [formGroup]="articleForm" class="article-form">
+
+    <!-- Nom -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nom de l'article</mat-label>
+      <mat-icon matPrefix>label</mat-icon>
+      <input matInput formControlName="nom" placeholder="Ex: Dell XPS 15" />
+      <mat-error *ngIf="articleForm.get('nom')?.hasError('required')">Le nom est requis</mat-error>
+      <mat-error *ngIf="articleForm.get('nom')?.hasError('minlength')">Minimum 3 caractères</mat-error>
+    </mat-form-field>
+
+    <!-- Catégorie -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Catégorie</mat-label>
+      <mat-icon matPrefix>category</mat-icon>
+      <mat-select formControlName="categorie">
+        <mat-option value="Électronique"><mat-icon>electronic</mat-icon></mat-option>
+        <mat-option value="Informatique"><mat-icon>computer</mat-icon></mat-option>
+        <mat-option value="Bureau"><mat-icon>Desk</mat-icon></mat-option>
+        <mat-option value="Mobilier"><mat-icon>furniture</mat-icon></mat-option>
+        <mat-option value="Accessoires"><mat-icon>Accessory</mat-icon></mat-option>
+        <mat-option value="Audio"><mat-icon>audio</mat-icon></mat-option>
+        <mat-option value="Réseau"><mat-icon>network</mat-icon></mat-option>
+      </mat-select>
+      <mat-error *ngIf="articleForm.get('categorie')?.hasError('required')">La catégorie est requise</mat-error>
+    </mat-form-field>
+
+    <!-- Description -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <mat-icon matPrefix>description</mat-icon>
+      <textarea matInput formControlName="description" rows="3"
+        placeholder="Description détaillée de l'article"></textarea>
+    </mat-form-field>
+
+    <!-- Prix + Stock -->
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Prix (FCFA)</mat-label>
+        <mat-icon matPrefix>attach_money</mat-icon>
+        <input matInput type="number" formControlName="prix" placeholder="0" />
+        <mat-error *ngIf="articleForm.get('prix')?.hasError('required')">Le prix est requis</mat-error>
+        <mat-error *ngIf="articleForm.get('prix')?.hasError('min')">Le prix doit être positif</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="half-width">
+        <mat-label>Stock</mat-label>
+        <mat-icon matPrefix>inventory</mat-icon>
+        <input matInput type="number" formControlName="stock" placeholder="0" />
+        <mat-error *ngIf="articleForm.get('stock')?.hasError('required')">Le stock est requis</mat-error>
+        <mat-error *ngIf="articleForm.get('stock')?.hasError('min')">Le stock doit être positif</mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Résumé -->
+    <div class="form-summary" *ngIf="articleForm.valid">
+      <p><strong>Résumé :</strong></p>
+      <p>{{ articleForm.value.nom }} — {{ formatPrice(articleForm.value.prix) }}</p>
+    </div>
+
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+    Annuler
+  </button>
+  <button mat-raised-button
+    [disabled]="!articleForm.valid"
+    (click)="onSubmit()">
+    <mat-icon>{{ data.isEditMode ? 'save' : 'add' }}</mat-icon>
+    {{ data.isEditMode ? 'Modifier' : 'Créer' }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,174 @@
+// ── Variables ─────────────────────────────────────────────────────────────────
+$green:        #2D5C4A;
+$green-light:  #e8f2ee;
+$gold:         #D4A853;
+$cream:        #FAF7F2;
+$sand:         #f0ebe1;
+$ink:          #1a2e26;
+$muted:        #7a9189;
+$white:        #ffffff;
+$danger:       #d45353;
+$danger-bg:    #fdeaea;
+$success:      #2b9e6c;
+$success-bg:   #e6f9f1;
+
+$card-shadow:       0 2px 16px rgba(45, 92, 74, 0.08);
+$card-shadow-hover: 0 8px 32px rgba(45, 92, 74, 0.16);
+$radius:            20px;
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Container ─────────────────────────────────────────────────────────────────
+.form-container {
+  padding: 32px 28px 60px;
+  background: $cream;
+  min-height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  animation: fadeUp .4s ease;
+  max-width: 700px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.detail-header {
+  padding-bottom: 24px;
+  border-bottom: 1.5px solid rgba($green, 0.12);
+
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-eyebrow {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: $gold; margin-bottom: 6px;
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3vw, 34px);
+    font-weight: 800; color: $green;
+    line-height: 1; letter-spacing: -1px; margin: 0;
+  }
+}
+
+.back-btn {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: $white; border: 1.5px solid rgba($green, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: $green;
+  box-shadow: $card-shadow; transition: all .2s ease; flex-shrink: 0;
+  &:hover { background: $green; color: $white; }
+}
+
+// ── Banners ───────────────────────────────────────────────────────────────────
+.success-banner, .error-banner {
+  display: flex; align-items: center; gap: 10px;
+  border-radius: 12px; padding: 12px 18px;
+  font-size: 13.5px; animation: fadeUp .3s ease;
+  mat-icon { font-size: 20px; flex-shrink: 0; }
+}
+.success-banner { background: $success-bg; border: 1px solid rgba($success, .25); color: $success; }
+.error-banner   { background: $danger-bg;  border: 1px solid rgba($danger, .25);  color: $danger; }
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.card {
+  background: $white; border-radius: $radius;
+  box-shadow: $card-shadow; border: 1.5px solid rgba($green, 0.07);
+  overflow: hidden;
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 22px 0;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif; font-size: 13px;
+    font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: $green;
+  }
+  .card-body { padding: 18px 22px 22px; }
+}
+
+// ── Form grid ─────────────────────────────────────────────────────────────────
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 20px;
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex; flex-direction: column; gap: 7px;
+  &.full-width { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase; color: $muted;
+  }
+  .required { color: $danger; margin-left: 2px; }
+}
+
+.input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  border: 1.5px solid rgba($green, 0.2); border-radius: 12px; padding: 11px 14px;
+  background: $cream; transition: border-color .2s, background .2s;
+
+  &:focus-within { border-color: $green; background: $white; }
+  &.error { border-color: $danger; background: $danger-bg; }
+
+  input {
+    flex: 1; border: none; outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: $ink; background: transparent;
+    &::placeholder { color: $muted; }
+  }
+}
+
+.input-icon { font-size: 18px !important; color: $muted; flex-shrink: 0; }
+.field-error { font-size: 12px; color: $danger; font-weight: 500; }
+
+// ── Form actions ──────────────────────────────────────────────────────────────
+.form-actions {
+  display: flex; justify-content: flex-end; gap: 12px;
+  padding-top: 16px; border-top: 1px solid $sand;
+}
+
+.action-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: $white; border: 1.5px solid rgba($green, 0.18);
+  border-radius: 12px; padding: 10px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; color: $green;
+  cursor: pointer; transition: all .2s ease;
+  box-shadow: $card-shadow;
+  mat-icon { font-size: 18px; }
+
+  &:hover:not(:disabled) { background: $green-light; transform: translateY(-1px); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &.submit {
+    background: $green; color: $white; border-color: $green;
+    &:hover:not(:disabled) { box-shadow: $card-shadow-hover; }
+  }
+}
+
+.btn-spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba($white, 0.4);
+  border-top-color: $white; border-radius: 50%;
+  animation: spin .7s linear infinite; flex-shrink: 0;
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.loading-wrap {
+  display: flex; align-items: center; justify-content: center; height: 180px;
+}
+.spinner {
+  width: 38px; height: 38px;
+  border: 3px solid $green-light; border-top-color: $green;
+  border-radius: 50%; animation: spin .8s linear infinite;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .form-container { padding: 20px 16px 40px; max-width: 100%; }
+}

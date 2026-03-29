@@ -1,0 +1,46 @@
+
+    <mat-toolbar class="navbar">
+      <div class="navbar-left">
+        <button mat-icon-button (click)="toggleSidebar()" aria-label="Toggle sidebar">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <h2 class="org-name">{{ organizationName }}</h2>
+      </div>
+
+      <div class="navbar-right">
+        <button
+          mat-icon-button
+          [matBadge]="notificationCount"
+          matBadgeColor="warn"
+          aria-label="Notifications"
+        >
+          <mat-icon>notifications</mat-icon>
+        </button>
+
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="userMenu"
+          class="user-avatar"
+          aria-label="User menu"
+        >
+          <div class="avatar-circle">{{ userInitials }}</div>
+        </button>
+
+        <mat-menu #userMenu="matMenu">
+          <button mat-menu-item (click)="navigateToProfile()">
+            <mat-icon>person</mat-icon>
+            <span>Mon Profil</span>
+          </button>
+          <button mat-menu-item (click)="navigateToSettings()">
+            <mat-icon>settings</mat-icon>
+            <span>Paramètres</span>
+          </button>
+          <mat-divider> </mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      </div>
+    </mat-toolbar>
+  

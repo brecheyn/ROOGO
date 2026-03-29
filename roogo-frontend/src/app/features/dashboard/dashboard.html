@@ -1,0 +1,266 @@
+<div class="dashboard-container">
+
+  <!-- ── Header ── -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Gestion de Stock</div>
+      <h1>Tableau de Bord</h1>
+      <div class="header-meta">
+        <div class="status-dot" [class.error]="hasError"></div>
+        <span>Dernière mise à jour : {{ lastUpdate | date:'HH:mm:ss' }}</span>
+      </div>
+    </div>
+    <button class="refresh-btn" (click)="manualRefresh()" [disabled]="isLoading">
+      <mat-icon [class.rotating]="isLoading">refresh</mat-icon>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- ── Bannière erreur ── -->
+  <div class="error-banner" *ngIf="hasError">
+    <mat-icon>wifi_off</mat-icon>
+    <span>Impossible de joindre le serveur.</span>
+    <button (click)="manualRefresh()">Réessayer</button>
+  </div>
+
+  <!-- ── Stats Grid ── -->
+  <div class="stats-grid">
+
+    <div class="stat-card">
+      <div class="stat-icon ca">
+        <mat-icon>payments</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">CA Mois</div>
+        <div class="stat-value">{{ stats.chiffreAffairesMois | number:'1.0-0' }} F</div>
+        <div class="stat-trend" [ngClass]="getTrendClass(stats.chiffreAffairesTrend)">
+          <mat-icon>{{ getTrendIcon(stats.chiffreAffairesTrend) }}</mat-icon>
+          <span>{{ stats.chiffreAffairesTrend > 0 ? '+' : '' }}{{ stats.chiffreAffairesTrend }}% vs mois dernier</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon articles">
+        <mat-icon>inventory_2</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Articles</div>
+        <div class="stat-value">{{ stats.totalArticles }}</div>
+        <div class="stat-trend trend-neutral">
+          <mat-icon>inventory</mat-icon>
+          <span>en stock</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon clients">
+        <mat-icon>groups</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Clients</div>
+        <div class="stat-value">{{ stats.totalClients }}</div>
+        <div class="stat-trend trend-neutral">
+          <mat-icon>person</mat-icon>
+          <span>enregistrés</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon ventes">
+        <mat-icon>shopping_cart</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Ventes ce mois</div>
+        <div class="stat-value">{{ stats.totalVentes }}</div>
+        <div class="stat-trend" [ngClass]="getTrendClass(stats.ventesTrend)">
+          <mat-icon>{{ getTrendIcon(stats.ventesTrend) }}</mat-icon>
+          <span>{{ stats.ventesTrend > 0 ? '+' : '' }}{{ stats.ventesTrend }}% vs mois dernier</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card alert-card">
+      <div class="stat-icon stock">
+        <mat-icon>warning</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Stock Bas</div>
+        <div class="stat-value">{{ stats.stockBas }}</div>
+        <div class="stat-trend trend-neutral">
+          <span>articles à réapprovisionner</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon panier">
+        <mat-icon>show_chart</mat-icon>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Panier Moyen</div>
+        <div class="stat-value">{{ stats.panierMoyen | number:'1.0-0' }} F</div>
+        <div class="stat-trend" [ngClass]="getTrendClass(stats.panierTrend)">
+          <mat-icon>{{ getTrendIcon(stats.panierTrend) }}</mat-icon>
+          <span>{{ stats.panierTrend > 0 ? '+' : '' }}{{ stats.panierTrend }}%</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Content Grid ── -->
+  <div class="content-grid">
+
+    <!-- Graphique -->
+    <div class="card chart-card">
+      <div class="card-header">
+        <div class="card-title">📊 Ventes — 7 derniers jours</div>
+        <div class="card-badge">Cette semaine</div>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" *ngIf="salesChartData; else chartSkeleton">
+          <canvas baseChart
+            [data]="salesChartData"
+            [options]="chartOptions"
+            [type]="'line'">
+          </canvas>
+        </div>
+        <ng-template #chartSkeleton>
+          <div class="chart-skeleton"></div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- Top 5 Articles -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔥 Top 5 Articles</div>
+        <div class="card-badge">{{ topArticles.length }} articles</div>
+      </div>
+      <div class="card-body">
+
+        <div class="empty-state" *ngIf="topArticles.length === 0">
+          <mat-icon>inventory_2</mat-icon>
+          <p>Aucune vente enregistrée</p>
+        </div>
+
+        <div *ngFor="let article of topArticles; let i = index" class="article-item">
+          <div class="article-rank" [class.gold]="i === 0">{{ i + 1 }}</div>
+          <div class="article-info">
+            <div class="article-name">{{ article.nom }}</div>
+            <div class="article-sales">{{ article.ventes }} ventes</div>
+          </div>
+          <div class="article-bar-wrap">
+            <div class="article-bar-track">
+              <div class="article-bar-fill" [style.width]="getArticleBarWidth(i)"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="card alerts-card">
+      <div class="card-header">
+        <div class="card-title">⚠️ Alertes</div>
+        <div class="card-badge danger" *ngIf="stockAlerts.length > 0">
+          {{ stockAlerts.length }}
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div class="empty-state" *ngIf="stockAlerts.length === 0">
+          <mat-icon>check_circle</mat-icon>
+          <p>Aucune alerte</p>
+        </div>
+
+        <div class="alert-section-label" *ngIf="stockAlerts.length > 0">Stock bas & péremptions</div>
+
+        <div *ngFor="let alert of stockAlerts"
+          class="alert-item"
+          [class.alert-warning]="alert.type === 'bas'"
+          [class.alert-danger]="alert.type === 'expire'">
+          <mat-icon>{{ alert.type === 'bas' ? 'warning' : 'error' }}</mat-icon>
+          <div class="alert-text">
+            <span class="alert-nom">{{ alert.nom }}</span>
+            <span class="alert-detail">
+              {{ alert.type === 'bas'
+                ? 'Stock : ' + alert.stock + ' restants'
+                : 'Péremption proche (' + alert.stock + ' en stock)' }}
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Divider ── -->
+  <div class="section-divider"><span>Ventes récentes</span></div>
+
+  <!-- ── Ventes Récentes ── -->
+  <div class="card recent-sales-card">
+    <div class="card-header">
+      <div class="card-title">📋 Transactions</div>
+      <div class="card-badge">Aujourd'hui</div>
+    </div>
+    <div class="card-body no-top-pad">
+
+      <div class="empty-state" *ngIf="recentSales.length === 0">
+        <mat-icon>receipt_long</mat-icon>
+        <p>Aucune vente enregistrée</p>
+      </div>
+
+      <div class="sales-table-wrap" *ngIf="recentSales.length > 0">
+        <table mat-table [dataSource]="recentSales" class="sales-table">
+
+          <ng-container matColumnDef="clientNom">
+            <th mat-header-cell *matHeaderCellDef>Client</th>
+            <td mat-cell *matCellDef="let sale">
+              <div class="client-cell">
+                <div class="client-avatar">
+                  {{ sale.clientNom?.charAt(0)?.toUpperCase() || '?' }}
+                </div>
+                {{ sale.clientNom || 'Inconnu' }}
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="montant">
+            <th mat-header-cell *matHeaderCellDef>Montant</th>
+            <td mat-cell *matCellDef="let sale" class="montant-cell">
+              {{ sale.montant | number:'1.0-0' }} FCFA
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let sale" class="date-cell">
+              {{ sale.date | date:'dd/MM/yyyy HH:mm' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="statut">
+            <th mat-header-cell *matHeaderCellDef>Statut</th>
+            <td mat-cell *matCellDef="let sale">
+              <span class="status-badge" [ngClass]="getStatusClass(sale.statut)">
+                {{ sale.statut }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>

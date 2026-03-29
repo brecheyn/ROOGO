@@ -1,0 +1,156 @@
+<div class="list-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <div class="header-eyebrow">Achats</div>
+      <h1>Fournisseurs</h1>
+      <div class="header-meta">
+        <span class="status-dot"></span>
+        <span>{{ suppliers.length }} fournisseur(s)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadSuppliers()">
+        <mat-icon>refresh</mat-icon> Actualiser
+      </button>
+      <button class="action-btn add" (click)="createSupplier()">
+        <mat-icon>add</mat-icon> Nouveau fournisseur
+      </button>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input type="text" placeholder="Rechercher un fournisseur..."
+      [(ngModel)]="searchTerm" (input)="applyFilter()" />
+    <button class="clear-btn" *ngIf="searchTerm" (click)="resetFilter()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card" *ngIf="!loading && filtered.length > 0">
+    <div class="card-body no-pad">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fournisseur</th>
+            <th>Téléphone</th>
+            <th>Adresse</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filtered" (click)="viewSupplier(s)" class="clickable-row">
+            <td>
+              <div class="entity-cell">
+                <div class="entity-avatar">{{ getInitials(s) }}</div>
+                <div>
+                  <div class="entity-name">{{ s.name }} {{ s.surname }}</div>
+                  <div class="entity-sub">ID #{{ s.id }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="muted-cell">{{ s.phone || '—' }}</td>
+            <td class="muted-cell">{{ s.address || '—' }}</td>
+            <td (click)="$event.stopPropagation()">
+              <div class="row-actions">
+                <button class="icon-btn view"   (click)="viewSupplier(s)" title="Voir">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button class="icon-btn edit"   (click)="editSupplier(s)" title="Modifier">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="icon-btn delete" (click)="confirmDelete(s)" title="Supprimer">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="card" *ngIf="!loading && filtered.length === 0">
+    <div class="empty-state">
+      <mat-icon>store</mat-icon>
+      <p>Aucun fournisseur trouvé</p>
+      <button class="action-btn add" (click)="createSupplier()">
+        <mat-icon>add</mat-icon> Ajouter un fournisseur
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DÉTAIL -->
+<div class="modal-overlay" *ngIf="selectedSupplier" (click)="closeDetail()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-avatar">{{ getInitials(selectedSupplier) }}</div>
+      <div>
+        <h2>{{ selectedSupplier.name }} {{ selectedSupplier.surname }}</h2>
+        <div class="modal-sub">Fournisseur #{{ selectedSupplier.id }}</div>
+      </div>
+      <button class="modal-close" (click)="closeDetail()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-label">Nom</div>
+          <div class="detail-value">{{ selectedSupplier.name }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Prénom</div>
+          <div class="detail-value">{{ selectedSupplier.surname || '—' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Téléphone</div>
+          <div class="detail-value">{{ selectedSupplier.phone || '—' }}</div>
+        </div>
+        <div class="detail-item full">
+          <div class="detail-label">Adresse</div>
+          <div class="detail-value">{{ selectedSupplier.address || '—' }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="closeDetail()">Fermer</button>
+      <button class="action-btn edit-btn" (click)="editSupplier(selectedSupplier); closeDetail()">
+        <mat-icon>edit</mat-icon> Modifier
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMER SUPPRESSION -->
+<div class="modal-overlay" *ngIf="supplierToDelete" (click)="cancelDelete()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
+      <div>
+        <h2>Supprimer le fournisseur ?</h2>
+        <div class="modal-sub">{{ supplierToDelete.name }} {{ supplierToDelete.surname }}</div>
+      </div>
+      <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <p class="delete-warning">Cette action est irréversible. Toutes les commandes liées seront affectées.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+      <button class="action-btn danger-btn" (click)="deleteSupplier()">
+        <mat-icon>delete</mat-icon> Supprimer
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,272 @@
+// ── Variables ─────────────────────────────────────────────────────────────────
+$green:        #2D5C4A;
+$green-light:  #e8f2ee;
+$gold:         #D4A853;
+$gold-light:   #fdf3dc;
+$cream:        #FAF7F2;
+$sand:         #f0ebe1;
+$ink:          #1a2e26;
+$muted:        #7a9189;
+$white:        #ffffff;
+$danger:       #d45353;
+$danger-bg:    #fdeaea;
+
+$card-shadow:       0 2px 16px rgba(45, 92, 74, 0.08);
+$card-shadow-hover: 0 8px 32px rgba(45, 92, 74, 0.16);
+$radius:            20px;
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+.sale-form-container {
+  padding: 32px 28px 60px;
+  background: $cream;
+  min-height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  animation: fadeUp .4s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 820px;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.detail-header {
+  padding-bottom: 24px;
+  border-bottom: 1.5px solid rgba($green, 0.12);
+
+  .header-left { display: flex; align-items: center; gap: 16px; }
+
+  .header-eyebrow {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: $gold; margin-bottom: 6px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 800; color: $green;
+    line-height: 1; letter-spacing: -1px; margin: 0;
+  }
+
+  .header-meta {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 8px; font-size: 12.5px; color: $muted;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #4caf84; flex-shrink: 0;
+  }
+}
+
+.back-btn {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: $white;
+  border: 1.5px solid rgba($green, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: $green;
+  box-shadow: $card-shadow; transition: all .2s ease;
+  flex-shrink: 0;
+
+  &:hover { background: $green; color: $white; transform: translateY(-1px); }
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.card {
+  background: $white; border-radius: $radius;
+  box-shadow: $card-shadow;
+  border: 1.5px solid rgba($green, 0.07);
+  overflow: hidden;
+  animation: fadeUp .5s ease both;
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 22px 0;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif; font-size: 13px;
+    font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: $green;
+  }
+
+  .card-badge {
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    background: $green-light; color: $green;
+  }
+
+  .card-body {
+    padding: 16px 22px 22px;
+    &.no-top-pad { padding-top: 0; }
+  }
+}
+
+// ── Select wrap ───────────────────────────────────────────────────────────────
+.select-wrap {
+  display: flex; align-items: center; gap: 10px;
+  border: 1.5px solid rgba($green, 0.2);
+  border-radius: 12px; padding: 11px 14px;
+  background: $cream; transition: border-color .2s, background .2s;
+  flex: 1;
+
+  &:focus-within { border-color: $green; background: $white; }
+  &.selected { border-color: $green; }
+
+  select {
+    flex: 1; border: none; outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: $ink; background: transparent;
+    cursor: pointer;
+  }
+}
+
+.input-icon { font-size: 18px !important; color: $muted; flex-shrink: 0; }
+
+// ── Form row ──────────────────────────────────────────────────────────────────
+.form-row {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+
+.date-badge {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px; background: $green-light;
+  border-radius: 12px; font-size: 14px;
+  font-weight: 500; color: $green; white-space: nowrap;
+  mat-icon { font-size: 18px !important; }
+}
+
+// ── Article row ───────────────────────────────────────────────────────────────
+.article-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+
+.article-select { flex: 1; min-width: 220px; }
+
+.qty-wrap {
+  display: flex; align-items: center; gap: 10px;
+  border: 1.5px solid rgba($green, 0.2);
+  border-radius: 12px; padding: 11px 14px;
+  background: $cream; width: 130px;
+  transition: border-color .2s, background .2s;
+  &:focus-within { border-color: $green; background: $white; }
+
+  input {
+    width: 60px; border: none; outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: $ink; background: transparent;
+  }
+}
+
+.add-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: $green; color: $white;
+  border: none; border-radius: 12px;
+  padding: 12px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .2s ease;
+  box-shadow: $card-shadow;
+  mat-icon { font-size: 18px !important; }
+
+  &:hover:not(:disabled) { box-shadow: $card-shadow-hover; transform: translateY(-1px); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Lines table ───────────────────────────────────────────────────────────────
+.lines-table {
+  width: 100%; border-collapse: collapse;
+
+  thead tr { border-bottom: 1.5px solid $sand; }
+
+  th {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: $muted; padding: 14px 16px; text-align: left;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $sand;
+    &:last-child { border-bottom: none; }
+    &:hover { background: $cream; }
+  }
+
+  td {
+    font-size: 13.5px; color: $ink;
+    padding: 13px 16px; vertical-align: middle;
+  }
+}
+
+.article-name-cell { font-weight: 500; }
+.price-cell { color: $muted; }
+.montant-cell { font-family: 'Syne', sans-serif; font-weight: 600; color: $green; }
+
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  border: 1.5px solid rgba($danger, 0.2);
+  background: transparent; color: $danger;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .2s ease;
+  mat-icon { font-size: 16px; }
+  &:hover { background: $danger-bg; border-color: $danger; }
+}
+
+// ── Summary ───────────────────────────────────────────────────────────────────
+.summary-card { border-left: 3px solid $green !important; }
+
+.summary-rows { display: flex; flex-direction: column; gap: 4px; }
+
+.summary-row {
+  display: flex; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid $sand;
+  font-size: 14px;
+  &:last-child { border-bottom: none; }
+}
+
+.summary-label { color: $muted; }
+.summary-value { font-weight: 600; color: $ink; }
+
+.total-row {
+  padding-top: 14px; margin-top: 4px;
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700; color: $green;
+  border-top: 1.5px solid $sand !important;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+.form-actions {
+  display: flex; justify-content: flex-end; gap: 12px;
+}
+
+.action-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: $white;
+  border: 1.5px solid rgba($green, 0.18);
+  border-radius: 12px; padding: 11px 22px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; color: $green;
+  cursor: pointer; transition: all .2s ease;
+  box-shadow: $card-shadow;
+  mat-icon { font-size: 18px !important; }
+
+  &:hover:not(:disabled) { background: $green-light; transform: translateY(-1px); }
+
+  &.submit {
+    background: $green; color: $white; border-color: $green;
+    &:hover:not(:disabled) { box-shadow: $card-shadow-hover; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .sale-form-container { padding: 20px 16px 40px; max-width: 100%; }
+  .article-select { min-width: 100%; }
+  .qty-wrap { width: 100%; }
+  .form-actions { flex-direction: column; }
+}

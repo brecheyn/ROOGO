@@ -1,0 +1,145 @@
+<div class="sale-form-container">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="cancel()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div>
+        <div class="header-eyebrow">Nouvelle</div>
+        <h1>Créer une vente</h1>
+        <div class="header-meta">
+          <span class="status-dot"></span>
+          <span>{{ currentDate | date:'dd MMM yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION CLIENT -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Client</span>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="select-wrap" [class.selected]="selectedClient">
+          <mat-icon class="input-icon">person</mat-icon>
+          <select [(ngModel)]="selectedClient">
+            <option [value]="null">Sélectionner un client...</option>
+            <option *ngFor="let client of clients" [ngValue]="client">
+              {{ client.label }}
+            </option>
+          </select>
+        </div>
+        <div class="date-badge">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ currentDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION ARTICLE -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Ajouter un article</span>
+    </div>
+    <div class="card-body">
+      <div class="article-row">
+        <div class="select-wrap article-select">
+          <mat-icon class="input-icon">inventory_2</mat-icon>
+          <select [(ngModel)]="selectedArticle">
+            <option [value]="null">Choisir un article...</option>
+            <option *ngFor="let article of articles" [ngValue]="article">
+              {{ article.label }}
+            </option>
+          </select>
+        </div>
+        <div class="qty-wrap">
+          <mat-icon class="input-icon">format_list_numbered</mat-icon>
+          <input
+            type="number"
+            [(ngModel)]="selectedQuantite"
+            min="1"
+            placeholder="Qté"
+          />
+        </div>
+        <button class="add-btn"
+          (click)="addArticle()"
+          [disabled]="!selectedArticle || !selectedQuantite">
+          <mat-icon>add</mat-icon>
+          Ajouter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLEAU ARTICLES -->
+  <div class="card" *ngIf="saleLines.length > 0">
+    <div class="card-header">
+      <span class="card-title">Articles sélectionnés</span>
+      <span class="card-badge">{{ saleLines.length }} article(s)</span>
+    </div>
+    <div class="card-body no-top-pad">
+      <table class="lines-table">
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Qté</th>
+            <th>Prix unitaire</th>
+            <th>Sous-total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let line of saleLines; let i = index">
+            <td class="article-name-cell">{{ line.articleNom }}</td>
+            <td>{{ line.quantite }}</td>
+            <td class="price-cell">{{ line.prixUnitaire | number:'1.0-0' }} F</td>
+            <td class="montant-cell">{{ line.sousTotal | number:'1.0-0' }} F</td>
+            <td>
+              <button class="icon-btn delete" (click)="removeLine(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RÉSUMÉ -->
+  <div class="card summary-card" *ngIf="saleLines.length > 0">
+    <div class="card-header">
+      <span class="card-title">Résumé</span>
+    </div>
+    <div class="card-body">
+      <div class="summary-rows">
+        <div class="summary-row">
+          <span class="summary-label">Sous-total HT</span>
+          <span class="summary-value">{{ calculateSubtotal() | number:'1.0-0' }} F</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">TVA (18%)</span>
+          <span class="summary-value">{{ calculateTVA() | number:'1.0-0' }} F</span>
+        </div>
+        <div class="summary-row total-row">
+          <span>Total TTC</span>
+          <span>{{ calculateTotal() | number:'1.0-0' }} F</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="form-actions">
+    <button class="action-btn" (click)="cancel()">Annuler</button>
+    <button class="action-btn submit" (click)="saveSale()" [disabled]="!canSave()">
+      <mat-icon>save</mat-icon>
+      Enregistrer la vente
+    </button>
+  </div>
+
+</div>

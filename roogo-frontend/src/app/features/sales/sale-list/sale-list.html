@@ -1,0 +1,225 @@
+<div class="sale-list-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <div class="header-eyebrow">Gestion</div>
+      <h1>Ventes</h1>
+      <div class="header-meta">
+        <span class="status-dot"></span>
+        <span>{{ ventes.length }} vente(s) enregistrée(s)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadVentes()">
+        <mat-icon>refresh</mat-icon>
+        Actualiser
+      </button>
+      <button class="action-btn add" (click)="createSale()">
+        <mat-icon>add</mat-icon>
+        Nouvelle vente
+      </button>
+    </div>
+  </div>
+
+  <!-- STATS RAPIDES -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon ventes"><mat-icon>shopping_cart</mat-icon></div>
+      <div class="stat-content">
+        <div class="stat-label">Total ventes</div>
+        <div class="stat-value">{{ calculateTotal() | number:'1.0-0' }} F</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ca"><mat-icon>today</mat-icon></div>
+      <div class="stat-content">
+        <div class="stat-label">Ventes aujourd'hui</div>
+        <div class="stat-value">{{ todaySales }}</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon panier"><mat-icon>receipt</mat-icon></div>
+      <div class="stat-content">
+        <div class="stat-label">Panier moyen</div>
+        <div class="stat-value">{{ calculateAverage() | number:'1.0-0' }} F</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTRES -->
+  <div class="filters-wrap">
+    <div class="search-bar">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input
+        type="text"
+        placeholder="Rechercher par numéro ou client..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+      />
+      <button class="clear-btn" *ngIf="searchTerm" (click)="resetFilters()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="filter-select-wrap">
+      <mat-icon class="filter-icon">filter_list</mat-icon>
+      <select [(ngModel)]="filterStatus" (change)="applyFilters()">
+        <option value="">Tous les statuts</option>
+        <option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card" *ngIf="filteredVentes.length > 0; else noVentes">
+    <div class="card-body no-top-pad">
+      <div class="table-wrap">
+        <table class="ventes-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Articles</th>
+              <th>Montant</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vente of filteredVentes"
+                (click)="viewDetails(vente)"
+                class="clickable-row">
+              <td class="id-cell">#{{ vente.id }}</td>
+              <td>
+                <div class="client-cell">
+                  <div class="client-avatar">{{ vente.clientNom ? vente.clientNom[0] : '?' }}</div>
+                  <span class="client-name">{{ vente.clientNom }}</span>
+                </div>
+              </td>
+              <td class="date-cell">{{ vente.dateVente | date:'dd MMM yyyy' }}</td>
+              <td class="articles-cell">{{ vente.articles?.length || 0 }} article(s)</td>
+              <td class="montant-cell">{{ vente.montantTotal | number:'1.0-0' }} F</td>
+              <td>
+                <span class="status-badge"
+                  [class.status-success]="vente.statut === 'validee'"
+                  [class.status-warning]="vente.statut === 'en_attente'"
+                  [class.status-danger]="vente.statut === 'annulee'">
+                  {{ getStatusLabel(vente.statut) }}
+                </span>
+              </td>
+              <td (click)="$event.stopPropagation()">
+                <div class="row-actions">
+                  <button class="icon-btn view" (click)="viewDetails(vente)" title="Détails">
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                  <button class="icon-btn pdf" (click)="downloadInvoice(vente)" title="PDF">
+                    <mat-icon>picture_as_pdf</mat-icon>
+                  </button>
+                  <button class="icon-btn edit" (click)="editSale(vente)"
+                    [disabled]="vente.statut === 'annulee'" title="Modifier">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button class="icon-btn delete" (click)="confirmCancel(vente)"
+                    [disabled]="vente.statut === 'annulee'" title="Annuler">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noVentes>
+    <div class="card">
+      <div class="empty-state">
+        <mat-icon>shopping_cart</mat-icon>
+        <p>Aucune vente trouvée</p>
+        <button class="action-btn add" (click)="createSale()">
+          <mat-icon>add</mat-icon>
+          Créer une vente
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+</div>
+
+<!-- MODAL DETAILS -->
+<div class="modal-overlay" *ngIf="selectedVente" (click)="selectedVente = null">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2>Vente #{{ selectedVente.id }}</h2>
+        <span class="status-badge"
+          [class.status-success]="selectedVente.statut === 'validee'"
+          [class.status-warning]="selectedVente.statut === 'en_attente'"
+          [class.status-danger]="selectedVente.statut === 'annulee'">
+          {{ getStatusLabel(selectedVente.statut) }}
+        </span>
+      </div>
+      <button class="modal-close" (click)="selectedVente = null">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <div class="detail-info-row">
+        <div class="detail-info-item">
+          <div class="info-label">Client</div>
+          <div class="info-value">{{ selectedVente.clientNom }}</div>
+        </div>
+        <div class="detail-info-item">
+          <div class="info-label">Date</div>
+          <div class="info-value">{{ selectedVente.dateVente | date:'dd MMM yyyy HH:mm' }}</div>
+        </div>
+      </div>
+
+      <div class="section-label">Articles vendus</div>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Prix unitaire</th>
+            <th>Quantité</th>
+            <th>Sous-total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let article of selectedVente.articles">
+            <td>{{ article.articleNom }}</td>
+            <td>{{ article.prixUnitaire | number:'1.0-0' }} F</td>
+            <td>{{ article.quantite }}</td>
+            <td class="montant-cell">{{ article.sousTotal | number:'1.0-0' }} F</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="totals-wrap">
+        <div class="total-row">
+          <span>Sous-total HT</span>
+          <span>{{ calculateSaleSubtotal(selectedVente) | number:'1.0-0' }} F</span>
+        </div>
+        <div class="total-row">
+          <span>TVA (18%)</span>
+          <span>{{ calculateSaleTVA(selectedVente) | number:'1.0-0' }} F</span>
+        </div>
+        <div class="total-row grand-total">
+          <span>Total</span>
+          <span>{{ selectedVente.montantTotal | number:'1.0-0' }} F</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="selectedVente = null">Fermer</button>
+      <button class="action-btn pdf" (click)="downloadInvoice(selectedVente)">
+        <mat-icon>picture_as_pdf</mat-icon>
+        Télécharger PDF
+      </button>
+    </div>
+  </div>
+</div>

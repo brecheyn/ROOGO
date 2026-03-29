@@ -1,0 +1,78 @@
+<div class="form-container">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="cancel()"><mat-icon>arrow_back</mat-icon></button>
+      <div>
+        <div class="header-eyebrow">{{ isEdit ? 'Modifier' : 'Nouveau' }}</div>
+        <h1>{{ isEdit ? 'Modifier le fournisseur' : 'Ajouter un fournisseur' }}</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-wrap" *ngIf="loading"><div class="spinner"></div></div>
+
+  <!-- MESSAGES -->
+  <div class="success-banner" *ngIf="successMsg">
+    <mat-icon>check_circle</mat-icon><span>{{ successMsg }}</span>
+  </div>
+  <div class="error-banner" *ngIf="errorMsg">
+    <mat-icon>error_outline</mat-icon><span>{{ errorMsg }}</span>
+  </div>
+
+  <!-- FORM -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-header"><span class="card-title">Informations du fournisseur</span></div>
+    <div class="card-body">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Nom <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.name">
+            <mat-icon class="input-icon">person</mat-icon>
+            <input type="text" [(ngModel)]="form.name"
+              placeholder="Nom du fournisseur" (input)="errors.name = ''" />
+          </div>
+          <span class="field-error" *ngIf="errors.name">{{ errors.name }}</span>
+        </div>
+
+        <div class="form-group">
+          <label>Prénom</label>
+          <div class="input-wrap">
+            <mat-icon class="input-icon">person_outline</mat-icon>
+            <input type="text" [(ngModel)]="form.surname" placeholder="Prénom" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Téléphone</label>
+          <div class="input-wrap">
+            <mat-icon class="input-icon">phone</mat-icon>
+            <input type="text" [(ngModel)]="form.phone" placeholder="+226 70 00 00 00" />
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Adresse</label>
+          <div class="input-wrap">
+            <mat-icon class="input-icon">location_on</mat-icon>
+            <input type="text" [(ngModel)]="form.address" placeholder="Adresse complète" />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button class="action-btn" (click)="cancel()">Annuler</button>
+        <button class="action-btn submit" (click)="save()" [disabled]="saving">
+          <span class="btn-spinner" *ngIf="saving"></span>
+          <mat-icon *ngIf="!saving">save</mat-icon>
+          {{ saving ? 'Enregistrement...' : (isEdit ? 'Mettre à jour' : 'Créer le fournisseur') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

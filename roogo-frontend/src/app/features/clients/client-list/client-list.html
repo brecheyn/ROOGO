@@ -1,0 +1,130 @@
+<div class="client-list-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <div>
+      <div class="header-eyebrow">Gestion</div>
+      <h1>Clients</h1>
+      <div class="header-meta">
+        <span class="status-dot"></span>
+        <span>{{ clients.length }} client(s) enregistré(s)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadClients()" [disabled]="loading">
+        <mat-icon [class.rotating]="loading">refresh</mat-icon>
+        Actualiser
+      </button>
+      <button class="action-btn add" (click)="goToCreate()">
+        <mat-icon>person_add</mat-icon>
+        Nouveau client
+      </button>
+    </div>
+  </div>
+
+  <!-- BARRE RECHERCHE -->
+  <div class="search-bar-wrap">
+    <div class="search-bar">
+      <mat-icon search-icon>search</mat-icon>
+      <input
+        type="text"
+        placeholder="Rechercher un client..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearch()"
+      />
+      <button class="clear-btn" *ngIf="searchQuery" (click)="clearSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="results-count" *ngIf="searchQuery">
+      {{ filteredClients.length }} résultat(s)
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card" *ngIf="!loading">
+    <div class="card-body no-top-pad">
+
+      <div class="table-wrap" *ngIf="filteredClients.length > 0; else noClients">
+        <table class="clients-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Client</th>
+              <th>Téléphone</th>
+              <th>Adresse</th>
+              <th>Inscrit le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let client of filteredClients; let i = index"
+                (click)="goToDetail(client.id)"
+                class="clickable-row">
+              <td class="id-cell">{{ client.id }}</td>
+              <td>
+                <div class="client-cell">
+                  <div class="client-avatar">{{ client.name[0] }}{{ client.surname[0] }}</div>
+                  <div>
+                    <div class="client-name">{{ client.name }} {{ client.surname }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="phone-cell">{{ client.phone || '—' }}</td>
+              <td class="address-cell">{{ client.address || '—' }}</td>
+              <td class="date-cell">{{ client.created_at | date:'dd MMM yyyy' }}</td>
+              <td (click)="$event.stopPropagation()">
+                <div class="row-actions">
+                  <button class="icon-btn edit" (click)="goToEdit(client.id)" title="Modifier">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button class="icon-btn delete" (click)="confirmDelete(client)" title="Supprimer">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noClients>
+        <div class="empty-state">
+          <mat-icon>people_outline</mat-icon>
+          <p>{{ searchQuery ? 'Aucun client trouvé' : 'Aucun client enregistré' }}</p>
+          <button class="action-btn add" (click)="goToCreate()" *ngIf="!searchQuery">
+            <mat-icon>person_add</mat-icon>
+            Ajouter un client
+          </button>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-wrap" *ngIf="loading">
+    <div class="spinner"></div>
+  </div>
+
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirmer la suppression</h2>
+    </div>
+    <div class="modal-body">
+      <p>Supprimer le client <strong>{{ clientToDelete?.name }} {{ clientToDelete?.surname }}</strong> ?</p>
+      <p class="modal-warning">Cette action est irréversible.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="closeDeleteModal()">Annuler</button>
+      <button class="action-btn delete" (click)="deleteClient()">
+        <mat-icon>delete</mat-icon>
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>

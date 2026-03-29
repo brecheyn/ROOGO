@@ -1,0 +1,114 @@
+<div class="form-container">
+
+  <!-- HEADER -->
+  <div class="detail-header">
+    <div class="header-left">
+      <button class="back-btn" (click)="cancel()"><mat-icon>arrow_back</mat-icon></button>
+      <div>
+        <div class="header-eyebrow">Achats</div>
+        <h1>Nouvelle commande</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="success-banner" *ngIf="successMsg">
+    <mat-icon>check_circle</mat-icon><span>{{ successMsg }}</span>
+  </div>
+  <div class="error-banner" *ngIf="errorMsg">
+    <mat-icon>error_outline</mat-icon><span>{{ errorMsg }}</span>
+  </div>
+
+  <!-- FORM -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Détails de la commande</span></div>
+    <div class="card-body">
+      <div class="form-grid">
+
+        <!-- Article -->
+        <div class="form-group">
+          <label>Article <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.id_article">
+            <mat-icon class="input-icon">inventory_2</mat-icon>
+            <select [(ngModel)]="form.id_article" (change)="errors.id_article = ''">
+              <option [value]="null">Sélectionner un article...</option>
+              <option *ngFor="let a of articles" [value]="a.id">
+                {{ a.name_article }} (stock: {{ a.quantity }})
+              </option>
+            </select>
+          </div>
+          <span class="field-error" *ngIf="errors.id_article">{{ errors.id_article }}</span>
+        </div>
+
+        <!-- Fournisseur -->
+        <div class="form-group">
+          <label>Fournisseur <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.id_supplier">
+            <mat-icon class="input-icon">store</mat-icon>
+            <select [(ngModel)]="form.id_supplier" (change)="errors.id_supplier = ''">
+              <option [value]="null">Sélectionner un fournisseur...</option>
+              <option *ngFor="let s of suppliers" [value]="s.id">
+                {{ s.name }} {{ s.surname }}
+              </option>
+            </select>
+          </div>
+          <span class="field-error" *ngIf="errors.id_supplier">{{ errors.id_supplier }}</span>
+        </div>
+
+        <!-- Quantité -->
+        <div class="form-group">
+          <label>Quantité <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.quantity">
+            <mat-icon class="input-icon">format_list_numbered</mat-icon>
+            <input type="number" [(ngModel)]="form.quantity" min="1"
+              placeholder="0" (input)="errors.quantity = ''" />
+          </div>
+          <span class="field-error" *ngIf="errors.quantity">{{ errors.quantity }}</span>
+        </div>
+
+        <!-- Prix -->
+        <div class="form-group">
+          <label>Prix total (F CFA) <span class="required">*</span></label>
+          <div class="input-wrap" [class.error]="errors.price">
+            <mat-icon class="input-icon">payments</mat-icon>
+            <input type="number" [(ngModel)]="form.price" min="0"
+              placeholder="0" (input)="errors.price = ''" />
+          </div>
+          <span class="field-error" *ngIf="errors.price">{{ errors.price }}</span>
+        </div>
+
+      </div>
+
+      <!-- RÉSUMÉ -->
+      <div class="summary-wrap" *ngIf="selectedArticle || selectedSupplier">
+        <div class="summary-title">Récapitulatif</div>
+        <div class="summary-row" *ngIf="selectedArticle">
+          <span>Article</span>
+          <span>{{ selectedArticle.name_article }}</span>
+        </div>
+        <div class="summary-row" *ngIf="selectedSupplier">
+          <span>Fournisseur</span>
+          <span>{{ selectedSupplier.name }} {{ selectedSupplier.surname }}</span>
+        </div>
+        <div class="summary-row" *ngIf="form.quantity">
+          <span>Quantité</span>
+          <span>{{ form.quantity }}</span>
+        </div>
+        <div class="summary-row total" *ngIf="form.price">
+          <span>Total</span>
+          <span>{{ form.price | number:'1.0-0' }} F</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="action-btn" (click)="cancel()">Annuler</button>
+        <button class="action-btn submit" (click)="save()" [disabled]="saving">
+          <span class="btn-spinner" *ngIf="saving"></span>
+          <mat-icon *ngIf="!saving">shopping_cart</mat-icon>
+          {{ saving ? 'Envoi...' : 'Passer la commande' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

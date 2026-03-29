@@ -1,0 +1,63 @@
+<div class="categories-container">
+    <mat-toolbar color="primary">
+        <span>Categories</span>
+        <span class="spacer"></span>
+        <button mat-raised-button color="accent" (click)="onAddCategory()">
+            <mat-icon>add</mat-icon>
+            Add Category
+        </button>
+    </mat-toolbar>
+
+    <div class="categories-content">
+        <mat-card *ngIf="(categories$ | async)?.length === 0" class="empty-state">
+            <mat-card-content>
+                <mat-icon class="empty-icon">category</mat-icon>
+                <h2>No Categories Yet</h2>
+                <p>Get started by creating your first category</p>
+                <button mat-raised-button color="primary" (click)="onAddCategory()">
+                    <mat-icon>add</mat-icon>
+                    Create Category
+                </button>
+            </mat-card-content>
+        </mat-card>
+
+        <div class="table-container" *ngIf="(categories$ | async) as categories">
+            <table mat-table [dataSource]="categories" class="categories-table">
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let category">{{ category.name }}</td>
+                </ng-container>
+
+                <!-- Description Column -->
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef>Description</th>
+                    <td mat-cell *matCellDef="let category">
+                        {{ category.description || '—' }}
+                    </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let category">
+                        <button mat-icon-button 
+                                [matTooltip]="'Edit'" 
+                                (click)="onEditCategory(category)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button 
+                                [matTooltip]="'Delete'" 
+                                color="warn"
+                                (click)="onDeleteCategory(category)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+    </div>
+</div>

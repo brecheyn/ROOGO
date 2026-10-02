@@ -4,7 +4,7 @@
   <div class="dashboard-header">
     <div class="header-left">
       <div class="header-eyebrow">Gestion de Stock</div>
-      <h1>Tableau de Bord</h1>
+      <h1>Tableau de Bord <span class="store-badge">— {{ storeService.currentStoreId() ? storeService.currentStoreName() : 'Tous les magasins' }}</span></h1>
       <div class="header-meta">
         <div class="status-dot" [class.error]="hasError"></div>
         <span>Dernière mise à jour : {{ lastUpdate | date:'HH:mm:ss' }}</span>

@@ -16,19 +16,31 @@
     </mat-form-field>
 
     <!-- Catégorie -->
-    <mat-form-field appearance="outline" class="full-width">
+    <mat-form-field appearance="outline" class="full-width category-field">
       <mat-label>Catégorie</mat-label>
       <mat-icon matPrefix>category</mat-icon>
-      <mat-select formControlName="categorie">
-        <mat-option value="Électronique"><mat-icon>electronic</mat-icon></mat-option>
-        <mat-option value="Informatique"><mat-icon>computer</mat-icon></mat-option>
-        <mat-option value="Bureau"><mat-icon>Desk</mat-icon></mat-option>
-        <mat-option value="Mobilier"><mat-icon>furniture</mat-icon></mat-option>
-        <mat-option value="Accessoires"><mat-icon>Accessory</mat-icon></mat-option>
-        <mat-option value="Audio"><mat-icon>audio</mat-icon></mat-option>
-        <mat-option value="Réseau"><mat-icon>network</mat-icon></mat-option>
+      <mat-select formControlName="categorie" placeholder="Choisir une catégorie" panelClass="category-panel" (selectionChange)="onCategoryChange($event)">
+        <mat-option value="Alimentation"><mat-icon>restaurant</mat-icon> Alimentation</mat-option>
+        <mat-option value="Électronique"><mat-icon>devices</mat-icon> Électronique</mat-option>
+        <mat-option value="Fournitures"><mat-icon>edit_note</mat-icon> Fournitures</mat-option>
+        <mat-option value="Hygiène"><mat-icon>clean_hands</mat-icon> Hygiène</mat-option>
+        <mat-option value="Boissons"><mat-icon>local_bar</mat-icon> Boissons</mat-option>
+        <mat-option value="Textile"><mat-icon>checkroom</mat-icon> Textile</mat-option>
+        <mat-option value="Informatique"><mat-icon>computer</mat-icon> Informatique</mat-option>
+        <mat-option value="Bureau"><mat-icon>desk</mat-icon> Bureau</mat-option>
+        <mat-option value="Mobilier"><mat-icon>chair</mat-icon> Mobilier</mat-option>
+        <mat-option value="Autre"><mat-icon>more_horiz</mat-icon> Autre</mat-option>
       </mat-select>
       <mat-error *ngIf="articleForm.get('categorie')?.hasError('required')">La catégorie est requise</mat-error>
+    </mat-form-field>
+
+    <!-- Catégorie personnalisée (visible si "Autre" sélectionné) -->
+    <mat-form-field appearance="outline" class="full-width custom-category-field" *ngIf="showCustomCategory">
+      <mat-label>Votre catégorie</mat-label>
+      <mat-icon matPrefix>category</mat-icon>
+      <input matInput formControlName="categoriePersonnalisee" placeholder="Saisissez votre catégorie" autocomplete="off" />
+      <mat-error *ngIf="articleForm.get('categoriePersonnalisee')?.hasError('required')">La catégorie est requise</mat-error>
+      <mat-error *ngIf="articleForm.get('categoriePersonnalisee')?.hasError('minlength')">Minimum 2 caractères</mat-error>
     </mat-form-field>
 
     <!-- Description -->
@@ -57,6 +69,13 @@
         <mat-error *ngIf="articleForm.get('stock')?.hasError('min')">Le stock doit être positif</mat-error>
       </mat-form-field>
     </div>
+
+    <!-- Date de péremption -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Date de péremption</mat-label>
+      <mat-icon matPrefix>event</mat-icon>
+      <input matInput type="date" formControlName="expiration_date" />
+    </mat-form-field>
 
     <!-- Résumé -->
     <div class="form-summary" *ngIf="articleForm.valid">

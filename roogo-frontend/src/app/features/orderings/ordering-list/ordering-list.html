@@ -4,7 +4,7 @@
   <div class="dashboard-header">
     <div>
       <div class="header-eyebrow">Achats</div>
-      <h1>Commandes</h1>
+      <h1>Commandes <span class="store-badge">— {{ storeService.currentStoreId() ? storeService.currentStoreName() : 'Tous les magasins' }}</span></h1>
       <div class="header-meta">
         <span class="status-dot"></span>
         <span>{{ orderings.length }} commande(s)</span>
@@ -52,14 +52,6 @@
     </div>
   </div>
 
-  <!-- MESSAGES -->
-  <div class="success-banner" *ngIf="successMsg">
-    <mat-icon>check_circle</mat-icon><span>{{ successMsg }}</span>
-  </div>
-  <div class="error-banner" *ngIf="errorMsg">
-    <mat-icon>error_outline</mat-icon><span>{{ errorMsg }}</span>
-  </div>
-
   <!-- FILTRES -->
   <div class="filters-wrap">
     <div class="search-bar">
@@ -83,60 +75,66 @@
   <!-- LOADING -->
   <div class="loading-wrap" *ngIf="loading"><div class="spinner"></div></div>
 
-  <!-- TABLE -->
-  <div class="card" *ngIf="!loading && filtered.length > 0">
-    <div class="card-body no-pad">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Article</th>
-            <th>Fournisseur</th>
-            <th>Quantité</th>
-            <th>Prix</th>
-            <th>Date commande</th>
-            <th>Statut</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let o of filtered" (click)="viewOrdering(o)" class="clickable-row">
-            <td class="id-cell">#{{ o.id }}</td>
-            <td>
-              <div class="article-cell">
-                <div class="article-icon"><mat-icon>inventory_2</mat-icon></div>
-                <span>{{ o.name_article || '—' }}</span>
-              </div>
-            </td>
-            <td class="muted-cell">{{ o.supplier_name || '—' }}</td>
-            <td><span class="qty-badge">{{ o.quantity }}</span></td>
-            <td class="montant-cell">{{ o.price | number:'1.0-0' }} F</td>
-            <td class="muted-cell">{{ o.order_date | date:'dd MMM yyyy' }}</td>
-            <td>
-              <span class="status-badge"
-                [class.status-success]="isReceived(o)"
-                [class.status-warning]="!isReceived(o)">
-                {{ isReceived(o) ? 'Reçue' : 'En attente' }}
-              </span>
-            </td>
-            <td (click)="$event.stopPropagation()">
-              <div class="row-actions">
-                <button class="icon-btn view" (click)="viewOrdering(o)">
-                  <mat-icon>visibility</mat-icon>
-                </button>
-                <button class="icon-btn receive"
-                  [class.done]="isReceived(o)"
-                  [disabled]="isReceived(o) || receivingId === o.id"
-                  (click)="receiveOrdering(o)"
-                  [title]="isReceived(o) ? 'Déjà reçue' : 'Marquer comme reçue'">
-                  <span class="btn-spinner sm" *ngIf="receivingId === o.id"></span>
-                  <mat-icon *ngIf="receivingId !== o.id">{{ isReceived(o) ? 'check' : 'local_shipping' }}</mat-icon>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  <!-- CARTES -->
+  <div class="orders-grid" *ngIf="!loading && filtered.length > 0">
+    <div class="order-card" *ngFor="let o of filtered; let i = index" [style.animation-delay]="i * 0.05 + 's'">
+      <div class="order-card-header">
+        <div class="order-icon" [class.received]="isReceived(o)">
+          <mat-icon>{{ isReceived(o) ? 'check_circle' : 'hourglass_empty' }}</mat-icon>
+        </div>
+        <div class="order-id">#{{ o.id }}</div>
+        <div class="order-actions">
+          <button class="icon-btn edit" (click)="openEdit(o)" matTooltip="Modifier">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button class="icon-btn delete" (click)="confirmDelete(o)" matTooltip="Supprimer">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="order-card-body">
+        <div class="order-article">
+          <mat-icon>inventory_2</mat-icon>
+          <span>{{ o.name_article || '—' }}</span>
+        </div>
+        <div class="order-supplier">
+          <mat-icon>store</mat-icon>
+          <span>{{ o.supplier_name || '—' }}</span>
+        </div>
+      </div>
+
+      <div class="order-card-stats">
+        <div class="order-stat">
+          <span class="stat-val">{{ o.quantity }}</span>
+          <span class="stat-lbl">Quantité</span>
+        </div>
+        <div class="order-stat">
+          <span class="stat-val">{{ o.price | number:'1.0-0' }} F</span>
+          <span class="stat-lbl">Prix total</span>
+        </div>
+      </div>
+
+      <div class="order-card-footer">
+        <span class="order-date">
+          <mat-icon>calendar_today</mat-icon>
+          {{ o.order_date | date:'dd MMM yyyy' }}
+        </span>
+        <span class="status-badge"
+          [class.status-success]="isReceived(o)"
+          [class.status-warning]="!isReceived(o)">
+          {{ isReceived(o) ? 'Reçue' : 'En attente' }}
+        </span>
+      </div>
+
+      <button class="receive-btn-full"
+        *ngIf="!isReceived(o)"
+        [disabled]="receivingId === o.id"
+        (click)="receiveOrdering(o)">
+        <span class="btn-spinner sm" *ngIf="receivingId === o.id"></span>
+        <mat-icon *ngIf="receivingId !== o.id">local_shipping</mat-icon>
+        {{ receivingId === o.id ? 'Réception...' : 'Marquer comme reçue' }}
+      </button>
     </div>
   </div>
 
@@ -153,54 +151,81 @@
 
 </div>
 
-<!-- MODAL DÉTAIL COMMANDE -->
-<div class="modal-overlay" *ngIf="selectedOrdering" (click)="closeDetail()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
+<!-- MODAL CONFIRMER SUPPRESSION -->
+<div class="modal-overlay" *ngIf="deleteTarget" (click)="cancelDelete()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header delete-header">
+      <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
       <div>
-        <h2>Commande #{{ selectedOrdering.id }}</h2>
-        <span class="status-badge"
-          [class.status-success]="isReceived(selectedOrdering)"
-          [class.status-warning]="!isReceived(selectedOrdering)">
-          {{ isReceived(selectedOrdering) ? 'Reçue' : 'En attente' }}
-        </span>
+        <h2>Supprimer la commande</h2>
+        <div class="modal-sub">#{{ deleteTarget?.id }}</div>
       </div>
-      <button class="modal-close" (click)="closeDetail()"><mat-icon>close</mat-icon></button>
+      <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
     </div>
     <div class="modal-body">
-      <div class="detail-grid">
-        <div class="detail-item">
-          <div class="detail-label">Article</div>
-          <div class="detail-value">{{ selectedOrdering.name_article || '—' }}</div>
+      <p class="delete-warning">Cette action est irréversible.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+      <button class="action-btn danger-btn" (click)="confirmDeleteAction()">
+        <mat-icon>delete</mat-icon> Supprimer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER COMMANDE -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="showEditModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon-wrap"><mat-icon>edit</mat-icon></div>
+      <div>
+        <h2>Modifier la commande #{{ editData.id }}</h2>
+      </div>
+      <button class="modal-close" (click)="showEditModal = false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Article <span class="required">*</span></label>
+        <div class="input-wrap">
+          <mat-icon>inventory_2</mat-icon>
+          <select [(ngModel)]="editData.id_article">
+            <option [ngValue]="null" disabled>Choisir un article...</option>
+            <option *ngFor="let a of allArticles" [ngValue]="a.id">{{ a.name_article }}</option>
+          </select>
         </div>
-        <div class="detail-item">
-          <div class="detail-label">Fournisseur</div>
-          <div class="detail-value">{{ selectedOrdering.supplier_name || '—' }}</div>
+      </div>
+      <div class="form-field">
+        <label>Fournisseur <span class="required">*</span></label>
+        <div class="input-wrap">
+          <mat-icon>store</mat-icon>
+          <select [(ngModel)]="editData.id_supplier">
+            <option [ngValue]="null" disabled>Choisir un fournisseur...</option>
+            <option *ngFor="let s of allSuppliers" [ngValue]="s.id">{{ s.name }} {{ s.surname }}</option>
+          </select>
         </div>
-        <div class="detail-item">
-          <div class="detail-label">Quantité</div>
-          <div class="detail-value highlight">{{ selectedOrdering.quantity }}</div>
+      </div>
+      <div class="form-field">
+        <label>Quantité <span class="required">*</span></label>
+        <div class="input-wrap">
+          <mat-icon>format_list_numbered</mat-icon>
+          <input type="number" [(ngModel)]="editData.quantity" min="1" />
         </div>
-        <div class="detail-item">
-          <div class="detail-label">Prix total</div>
-          <div class="detail-value highlight">{{ selectedOrdering.price | number:'1.0-0' }} F</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Date de commande</div>
-          <div class="detail-value">{{ selectedOrdering.order_date | date:'dd MMM yyyy HH:mm' }}</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Date de réception</div>
-          <div class="detail-value">{{ selectedOrdering.receved_date ? (selectedOrdering.receved_date | date:'dd MMM yyyy') : '—' }}</div>
+      </div>
+      <div class="form-field">
+        <label>Prix total (FCFA) <span class="required">*</span></label>
+        <div class="input-wrap">
+          <mat-icon>payments</mat-icon>
+          <input type="number" [(ngModel)]="editData.price" min="0" />
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="action-btn" (click)="closeDetail()">Fermer</button>
-      <button class="action-btn receive-btn"
-        *ngIf="!isReceived(selectedOrdering)"
-        (click)="receiveOrdering(selectedOrdering); closeDetail()">
-        <mat-icon>local_shipping</mat-icon> Marquer reçue
+      <button class="action-btn" (click)="showEditModal = false">Annuler</button>
+      <button class="action-btn submit" (click)="updateOrdering()" [disabled]="savingEdit">
+        <span class="btn-spinner" *ngIf="savingEdit"></span>
+        <mat-icon *ngIf="!savingEdit">save</mat-icon>
+        {{ savingEdit ? 'Enregistrement...' : 'Enregistrer' }}
       </button>
     </div>
   </div>

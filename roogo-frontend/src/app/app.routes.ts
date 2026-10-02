@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
-import path from 'path';
 
 export const routes: Routes = [
  
@@ -19,7 +18,11 @@ export const routes: Routes = [
     path: 'signup',
     loadComponent: () => import('./features/auth/signup/signup').then(m => m.SignupComponent)
   },
-  
+  {
+    path: 'auth/forgot-password',
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password').then(m => m.ForgotPasswordComponent)
+  },
+
   // Routes protégées avec SIDEBAR
   {
     path: '',
@@ -72,7 +75,7 @@ export const routes: Routes = [
     },
     { path: 'orderings', 
       children: [
-       {path: '',loadComponent: () => import('./features/orderings/ordering-form/ordering-form').then(m => m.OrderingFormComponent) 
+       {path: '',loadComponent: () => import('./features/orderings/ordering-list/ordering-list').then(m => m.OrderingListComponent) 
     },
     {
       path: ':id',
@@ -104,6 +107,10 @@ export const routes: Routes = [
           {
             path: 'new',
             loadComponent: () => import('./features/sales/sale-form/sale-form').then(m => m.SaleFormComponent)
+          },
+          {
+            path: ':id/edit',
+            loadComponent: () => import('./features/sales/sale-form/sale-form').then(m => m.SaleFormComponent)
           }
         ]
       },
@@ -118,6 +125,31 @@ export const routes: Routes = [
       {
         path: 'categories',
         loadComponent: () => import('./features/categories/categories').then(m => m.CategoriesComponent)
+      },
+      {
+        path: 'intelligence/recommendations',
+        loadComponent: () => import('./features/intelligence/recommendations/recommendations').then(m => m.RecommendationsComponent)
+      },
+      {
+        path: 'intelligence/anomalies',
+        redirectTo: 'intelligence/recommendations',
+        pathMatch: 'full'
+      },
+      {
+        path: 'stores',
+        loadComponent: () => import('./features/stores/stores-management/stores-management').then(m => m.StoresManagementComponent)
+      },
+      {
+        path: 'payments',
+        loadComponent: () => import('./features/payments/payments').then(m => m.PaymentsComponent)
+      },
+      {
+        path: 'finance',
+        loadComponent: () => import('./features/finance/finance').then(m => m.FinanceComponent)
+      },
+      {
+        path: 'marketplace',
+        loadComponent: () => import('./features/marketplace/marketplace').then(m => m.MarketplaceComponent)
       }
     ]
   },

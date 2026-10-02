@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-client-list',
@@ -23,7 +24,7 @@ export class ClientListComponent implements OnInit {
 
   private apiUrl = 'http://localhost:3000/api';
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private http: HttpClient, private toast: ToastService) {}
 
   ngOnInit(): void {
     this.loadClients();
@@ -43,7 +44,7 @@ export class ClientListComponent implements OnInit {
           this.filteredClients = [...this.clients];
           this.loading = false;
         },
-        error: () => { this.loading = false; }
+        error: (err) => { this.loading = false; this.toast.error(`Échec chargement: ${err.error?.message || err.message || 'Erreur'}`); }
       });
   }
 
@@ -77,16 +78,22 @@ export class ClientListComponent implements OnInit {
     this.clientToDelete = null;
   }
 
-  deleteClient(): void {
+  confirmDeleteAction(): void {
     if (!this.clientToDelete) return;
-    this.http.delete(`${this.apiUrl}/clients/${this.clientToDelete.id}`, { headers: this.getHeaders() })
+    const id = this.clientToDelete.id;
+    this.http.delete(`${this.apiUrl}/clients/${id}`, { headers: this.getHeaders() })
       .subscribe({
         next: () => {
-          this.clients = this.clients.filter(c => c.id !== this.clientToDelete.id);
-          this.filteredClients = this.filteredClients.filter(c => c.id !== this.clientToDelete.id);
+          this.clients = this.clients.filter(c => c.id !== id);
+          this.filteredClients = this.filteredClients.filter(c => c.id !== id);
+          this.toast.success('Client supprimé');
           this.closeDeleteModal();
         },
-        error: (err) => console.error('Erreur suppression:', err)
+        error: (err) => this.toast.error(`Échec suppression: ${err.error?.message || err.message || 'Erreur'}`)
       });
+  }
+
+  cancelDelete(): void {
+    this.closeDeleteModal();
   }
 }

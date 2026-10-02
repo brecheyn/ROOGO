@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../../core/services/auth.service';
+import { StoreService } from '../../../core/services/store.service';
 import { User } from '../../models/user.model';
 import { MatDividerModule } from '@angular/material/divider';
 
@@ -37,6 +38,7 @@ export class NavbarComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
+    public storeService: StoreService,
   ) {}
 
   ngOnInit(): void {
@@ -60,7 +62,7 @@ export class NavbarComponent implements OnInit {
   }
 
   navigateToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/settings']);
   }
 
   navigateToSettings(): void {

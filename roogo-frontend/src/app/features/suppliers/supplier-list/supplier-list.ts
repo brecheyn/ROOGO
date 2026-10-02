@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-supplier-list',
@@ -22,7 +23,7 @@ export class SupplierListComponent implements OnInit {
 
   private apiUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private toast: ToastService) {}
 
   ngOnInit(): void { this.loadSuppliers(); }
 
@@ -35,7 +36,7 @@ export class SupplierListComponent implements OnInit {
     this.http.get<any>(`${this.apiUrl}/suppliers`, { headers: this.headers() })
       .subscribe({
         next: (res) => { this.suppliers = res.data || []; this.applyFilter(); this.loading = false; },
-        error: () => { this.loading = false; }
+        error: (err) => { this.loading = false; this.toast.error(`Échec chargement: ${err.error?.message || err.message || 'Erreur'}`); }
       });
   }
 
@@ -57,20 +58,25 @@ export class SupplierListComponent implements OnInit {
   editSupplier(s: any): void { this.router.navigate(['/suppliers', s.id, 'edit']); }
   createSupplier(): void { this.router.navigate(['/suppliers/new']); }
 
-  confirmDelete(s: any): void { this.supplierToDelete = s; }
+  confirmDelete(s: any): void {
+    this.supplierToDelete = s;
+  }
+
   cancelDelete(): void { this.supplierToDelete = null; }
 
-  deleteSupplier(): void {
+  confirmDeleteAction(): void {
     if (!this.supplierToDelete) return;
-    this.http.delete(`${this.apiUrl}/suppliers/${this.supplierToDelete.id}`, { headers: this.headers() })
+    const id = this.supplierToDelete.id;
+    this.http.delete(`${this.apiUrl}/suppliers/${id}`, { headers: this.headers() })
       .subscribe({
         next: () => {
-          this.suppliers = this.suppliers.filter(s => s.id !== this.supplierToDelete.id);
+          this.suppliers = this.suppliers.filter(s => s.id !== id);
           this.applyFilter();
-          if (this.selectedSupplier?.id === this.supplierToDelete.id) this.selectedSupplier = null;
-          this.supplierToDelete = null;
+          if (this.selectedSupplier?.id === id) this.selectedSupplier = null;
+          this.toast.success('Fournisseur supprimé');
+          this.cancelDelete();
         },
-        error: (err) => console.error(err)
+        error: (err) => this.toast.error(`Échec suppression: ${err.error?.message || err.message || 'Erreur'}`)
       });
   }
 

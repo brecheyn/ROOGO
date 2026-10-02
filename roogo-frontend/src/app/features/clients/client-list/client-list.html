@@ -109,21 +109,24 @@
 
 </div>
 
-<!-- CONFIRM DELETE MODAL -->
-<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-  <div class="modal modal-sm" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Confirmer la suppression</h2>
+<!-- MODAL CONFIRMER SUPPRESSION -->
+<div class="modal-overlay" *ngIf="clientToDelete" (click)="cancelDelete()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header delete-header">
+      <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
+      <div>
+        <h2>Supprimer le client ?</h2>
+        <div class="modal-sub">{{ clientToDelete?.name }} {{ clientToDelete?.surname }}</div>
+      </div>
+      <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
     </div>
     <div class="modal-body">
-      <p>Supprimer le client <strong>{{ clientToDelete?.name }} {{ clientToDelete?.surname }}</strong> ?</p>
-      <p class="modal-warning">Cette action est irréversible.</p>
+      <p class="delete-warning">Cette action est irréversible.</p>
     </div>
     <div class="modal-footer">
-      <button class="action-btn" (click)="closeDeleteModal()">Annuler</button>
-      <button class="action-btn delete" (click)="deleteClient()">
-        <mat-icon>delete</mat-icon>
-        Supprimer
+      <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+      <button class="action-btn danger-btn" (click)="confirmDeleteAction()">
+        <mat-icon>delete</mat-icon> Supprimer
       </button>
     </div>
   </div>

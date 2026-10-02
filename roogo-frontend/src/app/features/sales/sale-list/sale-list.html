@@ -4,7 +4,7 @@
   <div class="dashboard-header">
     <div>
       <div class="header-eyebrow">Gestion</div>
-      <h1>Ventes</h1>
+      <h1>Ventes <span class="store-badge">— {{ storeService.currentStoreId() ? storeService.currentStoreName() : 'Tous les magasins' }}</span></h1>
       <div class="header-meta">
         <span class="status-dot"></span>
         <span>{{ ventes.length }} vente(s) enregistrée(s)</span>
@@ -219,6 +219,115 @@
       <button class="action-btn pdf" (click)="downloadInvoice(selectedVente)">
         <mat-icon>picture_as_pdf</mat-icon>
         Télécharger PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER VENTE -->
+<div class="modal-overlay" *ngIf="showEditModal && editSaleData" (click)="closeEditModal()">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="header-eyebrow">Modifier</div>
+        <h2>Vente #{{ editSaleData.id }}</h2>
+      </div>
+      <button class="modal-close" (click)="closeEditModal()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+
+      <div class="edit-form-grid">
+        <div class="form-field">
+          <label>Client</label>
+          <select [(ngModel)]="editSelectedClient">
+            <option [ngValue]="null" disabled>Sélectionner un client</option>
+            <option *ngFor="let c of editClients" [ngValue]="c">{{ c.label }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Date</label>
+          <div class="date-input-wrap">
+            <input type="date" [(ngModel)]="editDate" #editDateInput />
+            <button class="date-icon-btn" (click)="editDateInput.showPicker()">
+              <mat-icon>calendar_today</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="add-line-row">
+        <select [(ngModel)]="editSelectedArticle">
+          <option [ngValue]="null" disabled>Ajouter un article</option>
+          <option *ngFor="let a of editArticles" [ngValue]="a">{{ a.label }}</option>
+        </select>
+        <input type="number" [(ngModel)]="editQuantite" min="1" class="qty-input" />
+        <button class="action-btn add" (click)="addEditLine()">
+          <mat-icon>add</mat-icon> Ajouter
+        </button>
+      </div>
+
+      <table class="detail-table" *ngIf="editLines.length > 0">
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Prix unitaire</th>
+            <th>Quantité</th>
+            <th>Sous-total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let line of editLines; let i = index">
+            <td>{{ line.articleNom }}</td>
+            <td>{{ line.prixUnitaire | number:'1.0-0' }} F</td>
+            <td>
+              <input type="number" [(ngModel)]="line.quantite" min="1"
+                (change)="line.sousTotal = line.quantite * line.prixUnitaire" class="inline-qty" />
+            </td>
+            <td>{{ line.sousTotal | number:'1.0-0' }} F</td>
+            <td>
+              <button class="icon-btn delete" (click)="removeEditLine(i)" title="Retirer">
+                <mat-icon>close</mat-icon>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="totals-wrap">
+        <div class="total-row grand-total"><span>Total</span><span>{{ editSubtotal() | number:'1.0-0' }} F</span></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="closeEditModal()">Annuler</button>
+      <button class="action-btn add" (click)="saveEdit()" [disabled]="savingEdit">
+        <mat-icon *ngIf="!savingEdit">save</mat-icon>
+        <span *ngIf="savingEdit" class="btn-spinner"></span>
+        {{ savingEdit ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMER ANNULATION -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header delete-header">
+      <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
+      <div>
+        <h2>Annuler la vente ?</h2>
+        <div class="modal-sub">#{{ venteToDelete?.id }} — {{ venteToDelete?.clientNom }}</div>
+      </div>
+      <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <p class="delete-warning">Cette action est irréversible.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+      <button class="action-btn danger-btn" (click)="confirmDeleteAction()">
+        <mat-icon>delete</mat-icon> Annuler la vente
       </button>
     </div>
   </div>

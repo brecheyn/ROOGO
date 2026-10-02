@@ -1,0 +1,172 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Paiements</div>
+      <h1>Devises & Mobile Money</h1>
+      <div class="header-meta">
+        <div class="status-dot"></div>
+        <span>Conversion, paiements et historique</span>
+      </div>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="custom-tabs">
+    <!-- Currency Converter -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">currency_exchange</mat-icon>
+        <span class="tab-label">Conversion</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Convertisseur de Devises</div>
+            <div class="card-hint">Base : XOF (Franc CFA)</div>
+          </div>
+          <div class="card-body">
+            <div class="converter-form">
+              <div class="form-field">
+                <label>Montant</label>
+                <div class="input-with-icon">
+                  <mat-icon>payments</mat-icon>
+                  <input type="number" [(ngModel)]="convertForm.amount" min="0" class="form-input" placeholder="100000">
+                </div>
+              </div>
+              <div class="converter-arrow">
+                <mat-icon>arrow_forward</mat-icon>
+              </div>
+              <div class="form-field">
+                <label>De</label>
+                <select [(ngModel)]="convertForm.from" class="form-select">
+                  <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+                </select>
+              </div>
+              <div class="converter-arrow">
+                <mat-icon>arrow_forward</mat-icon>
+              </div>
+              <div class="form-field">
+                <label>Vers</label>
+                <select [(ngModel)]="convertForm.to" class="form-select">
+                  <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+                </select>
+              </div>
+            </div>
+            <button class="primary-btn" (click)="doConvert()">
+              <mat-icon>currency_exchange</mat-icon> Convertir
+            </button>
+
+            <!-- Result -->
+            <div class="conversion-result" *ngIf="conversionResult()">
+              <div class="result-card">
+                <div class="result-from">
+                  <span class="result-amount">{{ conversionResult().original.amount | number:'1.2-2' }}</span>
+                  <span class="result-currency">{{ conversionResult().original.currency }}</span>
+                </div>
+                <mat-icon class="result-arrow">arrow_forward</mat-icon>
+                <div class="result-to">
+                  <span class="result-amount">{{ conversionResult().converted.amount | number:'1.2-2' }}</span>
+                  <span class="result-currency">{{ conversionResult().converted.currency }}</span>
+                </div>
+              </div>
+              <div class="result-rate">Taux : 1 {{ conversionResult().original.currency }} = {{ conversionResult().rate | number:'1.6-6' }} {{ conversionResult().converted.currency }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exchange Rates -->
+        <div class="card" *ngIf="rates()" style="margin-top: 20px">
+          <div class="card-header"><div class="card-title">Taux de Change</div></div>
+          <div class="card-body">
+            <div class="rates-grid">
+              <div class="rate-item" *ngFor="let r of rates().rates | keyvalue">
+                <div class="rate-code">{{ r.key }}</div>
+                <div class="rate-val">{{ r.value }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Mobile Money -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">phone_android</mat-icon>
+        <span class="tab-label">Mobile Money</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Payer par Mobile Money</div>
+          </div>
+          <div class="card-body">
+            <div class="provider-grid">
+              <div class="provider-card" *ngFor="let p of providers"
+                   [class.selected]="payForm.provider === p.value"
+                   (click)="payForm.provider = p.value">
+                <mat-icon>{{ p.icon }}</mat-icon>
+                <span>{{ p.label }}</span>
+              </div>
+            </div>
+
+            <div class="form-grid" style="margin-top: 24px">
+              <div class="form-field">
+                <label>Montant (FCFA)</label>
+                <div class="input-with-icon">
+                  <mat-icon>payments</mat-icon>
+                  <input type="number" [(ngModel)]="payForm.amount" min="100" class="form-input" placeholder="5000">
+                </div>
+              </div>
+              <div class="form-field">
+                <label>Téléphone</label>
+                <div class="input-with-icon">
+                  <mat-icon>phone</mat-icon>
+                  <input type="tel" [(ngModel)]="payForm.phone" class="form-input" placeholder="+225 07 07 07 07">
+                </div>
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label>Description</label>
+              <input type="text" [(ngModel)]="payForm.description" class="form-input" placeholder="Paiement fournisseur...">
+            </div>
+            <button class="primary-btn" (click)="doPay()">
+              <mat-icon>payment</mat-icon> Initier le Paiement
+            </button>
+
+            <div class="example-box">
+              <mat-icon>info</mat-icon>
+              <div>
+                <strong>Comment ça marche :</strong>
+                <p>Sélectionnez votre opérateur, entrez le montant et votre numéro. Vous recevrez une demande de confirmation sur votre téléphone.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- History -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">history</mat-icon>
+        <span class="tab-label">Historique</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="empty-state" *ngIf="paymentHistory().length === 0">
+          <mat-icon>history</mat-icon>
+          <h3>Aucun paiement</h3>
+          <p>L'historique de vos paiements apparaîtra ici.</p>
+        </div>
+        <div class="history-list" *ngIf="paymentHistory().length > 0">
+          <div class="history-item" *ngFor="let h of paymentHistory()">
+            <div class="history-icon"><mat-icon>payment</mat-icon></div>
+            <div class="history-info">
+              <span class="history-action">{{ h.action }}</span>
+              <span class="history-date">{{ h.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

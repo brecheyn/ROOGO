@@ -1,0 +1,144 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Marketplace</div>
+      <h1>Fournisseurs & E-Commerce</h1>
+      <div class="header-meta">
+        <div class="status-dot"></div>
+        <span>Catalogue, synchronisation et alertes</span>
+      </div>
+    </div>
+    <button class="refresh-btn" (click)="loadAll()" [disabled]="isLoading()">
+      <mat-icon [class.rotating]="isLoading()">refresh</mat-icon>
+      Actualiser
+    </button>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="custom-tabs">
+    <!-- Supplier Listings -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">storefront</mat-icon>
+        <span class="tab-label">Catalogue</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="search-bar">
+          <mat-icon>search</mat-icon>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher un produit fournisseur..." (keyup.enter)="loadAll()">
+          <button class="search-btn" (click)="loadAll()">Rechercher</button>
+        </div>
+
+        <div class="loading-grid" *ngIf="isLoading()">
+          <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoading() && listings().length === 0">
+          <div class="empty-icon">
+            <mat-icon>storefront</mat-icon>
+          </div>
+          <h3>Aucune annonce</h3>
+          <p>Le catalogue fournisseurs est vide. Les annonces de vos fournisseurs apparaîtront ici.</p>
+          <div class="example-hint">
+            <mat-icon>info</mat-icon>
+            <span>Exemple : Fournisseur proposing "Riz Premium" at 500 FCFA/unit, min 100 units</span>
+          </div>
+        </div>
+
+        <div class="listing-grid" *ngIf="!isLoading() && listings().length > 0">
+          <div class="listing-card" *ngFor="let l of listings(); let i = index" [style.animation-delay]="i * 0.06 + 's'">
+            <div class="listing-supplier">
+              <mat-icon>business</mat-icon>
+              <span>{{ l.supplier_name || 'Fournisseur' }}</span>
+            </div>
+            <div class="listing-name">{{ l.article_name }}</div>
+            <div class="listing-price">{{ l.unit_price | number:'1.0-0' }} <small>FCFA / unité</small></div>
+            <div class="listing-meta">
+              <span><mat-icon>inventory</mat-icon> Min: {{ l.min_quantity }} unités</span>
+              <span><mat-icon>schedule</mat-icon> {{ l.lead_time_days }} jours</span>
+            </div>
+            <button class="order-btn" (click)="order(l)">
+              <mat-icon>add_shopping_cart</mat-icon> Commander
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- E-commerce Sync -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">sync</mat-icon>
+        <span class="tab-label">E-Commerce</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card-header" style="margin-bottom: 20px">
+          <div class="card-title">Produits pour Boutique en Ligne</div>
+          <div class="card-badge green" *ngIf="syncProducts()">{{ syncProducts().count }} produit(s)</div>
+        </div>
+
+        <div class="empty-state" *ngIf="syncProducts() && syncProducts().count === 0">
+          <mat-icon>cloud_off</mat-icon>
+          <h3>Aucun produit</h3>
+          <p>Aucun produit disponible pour la synchronisation.</p>
+        </div>
+
+        <div class="product-grid" *ngIf="syncProducts() && syncProducts().count > 0">
+          <div class="product-card" *ngFor="let p of syncProducts().products">
+            <div class="product-id">{{ p.id }}</div>
+            <div class="product-title">{{ p.title }}</div>
+            <div class="product-price">{{ p.price | number:'1.0-0' }} {{ p.currency }}</div>
+            <div class="product-meta">
+              <span class="product-cat">{{ p.category }}</span>
+              <span class="product-stock" [ngClass]="p.availability">{{ p.stock_quantity }} en stock</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="example-box" *ngIf="syncProducts() && syncProducts().count > 0">
+          <mat-icon>info</mat-icon>
+          <div>
+            <strong>Format de synchronisation :</strong>
+            <p>Les données sont au format JSON-LD compatible Shopify/WooCommerce. Utilisez l'endpoint <code>/api/marketplace/ecommerce/sync</code> pour synchroniser.</p>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Auto Alerts -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">notifications_active</mat-icon>
+        <span class="tab-label">Alertes Auto</span>
+      </ng-template>
+      <div class="tab-content">
+        <button class="primary-btn" (click)="runAlerts()" style="margin-bottom: 20px">
+          <mat-icon>scanner</mat-icon> Scanner les Alertes
+        </button>
+
+        <div class="empty-state" *ngIf="alerts().length === 0">
+          <div class="empty-icon">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <h3>Aucune alerte</h3>
+          <p>Cliquez pour scanner les alertes automatiques (stock bas, péremptions).</p>
+          <div class="example-hint">
+            <mat-icon>info</mat-icon>
+            <span>L'IA détecte les articles en stock bas et les produits proches de péremption</span>
+          </div>
+        </div>
+
+        <div class="alert-list" *ngIf="alerts().length > 0">
+          <div class="alert-item" *ngFor="let a of alerts()" [ngClass]="'alert-' + a.type">
+            <div class="alert-icon">
+              <mat-icon>{{ a.type === 'low_stock' ? 'warning' : a.type === 'expiry_warning' ? 'schedule' : 'info' }}</mat-icon>
+            </div>
+            <div class="alert-text">
+              <span class="alert-title">{{ a.article_name }}</span>
+              <span class="alert-desc">{{ a.message }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

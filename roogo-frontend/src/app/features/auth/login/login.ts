@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { AssetsService } from '../../../core/services/assets.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -36,6 +37,7 @@ export class LoginComponent {
     private router: Router,
     public assetsService: AssetsService,
     private authService: AuthService,
+    private toast: ToastService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -68,7 +70,7 @@ export class LoginComponent {
 
     this.authService.login({ username, password }).subscribe({
       next: () => {
-        this.loading = false; // ← fix : était manquant
+        this.loading = false;
 
         if (this.isBrowser) {
           if (rememberMe) {
@@ -78,11 +80,13 @@ export class LoginComponent {
           }
         }
 
+        this.toast.success('Connexion réussie ! Bienvenue sur ROOGO.');
         this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
         this.loading      = false;
         this.errorMessage = err?.error?.message || 'Identifiants incorrects. Veuillez réessayer.';
+        this.toast.error(this.errorMessage);
       }
     });
   }

@@ -1,0 +1,140 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Intelligence Artificielle</div>
+      <h1>Recommandations</h1>
+      <div class="header-meta">
+        <div class="status-dot"></div>
+        <span>Suggestions &amp; anomalies détectées — Mise à jour : {{ lastUpdate() | date:'HH:mm:ss' }}</span>
+      </div>
+    </div>
+    <button class="refresh-btn" (click)="load()" [disabled]="isLoading()">
+      <mat-icon [class.rotating]="isLoading()">refresh</mat-icon>
+      Actualiser
+    </button>
+  </div>
+
+  <!-- Stats Summary -->
+  <div class="stats-row" *ngIf="!isLoading() && !hasError() && items().length > 0">
+    <div class="stat-pill">
+      <mat-icon>lightbulb</mat-icon>
+      <span>{{ items().length }} élément(s)</span>
+    </div>
+    <div class="stat-pill critical" *ngIf="getPriorityCount('critical') > 0">
+      <mat-icon>error</mat-icon>
+      <span>{{ getPriorityCount('critical') }} critique(s)</span>
+    </div>
+    <div class="stat-pill warning" *ngIf="getPriorityCount('high') > 0">
+      <mat-icon>warning</mat-icon>
+      <span>{{ getPriorityCount('high') }} haute(s)</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-grid" *ngIf="isLoading()">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- Error -->
+  <div class="empty-state" *ngIf="!isLoading() && hasError()">
+    <div class="empty-icon error">
+      <mat-icon>wifi_off</mat-icon>
+    </div>
+    <h3>Erreur de chargement</h3>
+    <p>Impossible de récupérer les recommandations. Vérifiez votre connexion puis réessayez.</p>
+    <button class="refresh-btn" (click)="load()">
+      <mat-icon>refresh</mat-icon> Réessayer
+    </button>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!isLoading() && !hasError() && items().length === 0">
+    <div class="empty-icon">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+    <h3>Tout va bien !</h3>
+    <p>Aucune action requise pour le moment. L'IA surveille votre stock et vos ventes en permanence.</p>
+    <div class="empty-examples">
+      <div class="example-card">
+        <mat-icon>shopping_cart</mat-icon>
+        <span>Réapprovisionnement</span>
+        <small>Articles en stock bas</small>
+      </div>
+      <div class="example-card">
+        <mat-icon>local_offer</mat-icon>
+        <span>Promotions</span>
+        <small>Stock à écouler</small>
+      </div>
+      <div class="example-card">
+        <mat-icon>error</mat-icon>
+        <span>Péremption</span>
+        <small>Produits à vendre vite</small>
+      </div>
+      <div class="example-card">
+        <mat-icon>report_problem</mat-icon>
+        <span>Anomalies</span>
+        <small>Ventes &amp; ajustements suspects</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Éléments (recommandations + anomalies) -->
+  <div class="rec-grid" *ngIf="!isLoading() && !hasError() && items().length > 0">
+    <div class="rec-card" *ngFor="let rec of items(); let i = index"
+         [class.critical]="rec.priority === 'critical'"
+         [class.high]="rec.priority === 'high'"
+         [class.medium]="rec.priority === 'medium'"
+         [class.anomaly]="rec.source === 'anomaly'"
+         [style.animation-delay]="i * 0.06 + 's'">
+      <div class="rec-accent" [ngClass]="rec.priority"></div>
+      <div class="rec-body">
+        <div class="rec-header">
+          <div class="rec-icon" [ngClass]="rec.priority">
+            <mat-icon>{{ getIcon(rec.type) }}</mat-icon>
+          </div>
+          <span class="priority-badge" [ngClass]="rec.priority">{{ getPriorityLabel(rec.priority) }}</span>
+        </div>
+        <span class="source-chip" [class.is-anomaly]="rec.source === 'anomaly'">
+          {{ rec.source === 'anomaly' ? 'Anomalie' : 'Recommandation' }}
+        </span>
+        <h3 class="rec-title">{{ rec.title }}</h3>
+        <p class="rec-desc">{{ rec.description }}</p>
+        <div class="rec-footer">
+          <div class="rec-action" *ngIf="rec.action">
+            <mat-icon>arrow_forward</mat-icon>
+            <span>{{ rec.action }}</span>
+          </div>
+          <div class="rec-buttons">
+            <button class="traiter-btn" type="button" *ngIf="routeFor(rec)" (click)="traiter(rec)">
+              <mat-icon>open_in_new</mat-icon>
+              <span>Traiter</span>
+            </button>
+            <button class="resolve-btn" type="button" (click)="resolve(rec)" title="Marquer comme résolu">
+              <mat-icon>check_circle</mat-icon>
+              <span>Résolu</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résolues -->
+  <div class="resolved-section" *ngIf="resolved().length > 0">
+    <button class="resolved-toggle" type="button" (click)="showResolved.set(!showResolved())">
+      <mat-icon>check_circle</mat-icon>
+      <span>Résolues ({{ resolved().length }})</span>
+      <mat-icon class="chev">{{ showResolved() ? 'expand_less' : 'expand_more' }}</mat-icon>
+    </button>
+    <div class="resolved-list" *ngIf="showResolved()">
+      <div class="resolved-item" *ngFor="let item of resolved()">
+        <span class="resolved-title">{{ item.title }}</span>
+        <button class="reactivate-btn" type="button" (click)="unresolve(item)">
+          <mat-icon>replay</mat-icon>
+          <span>Réactiver</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -155,7 +155,7 @@ exports.getOrganization = async (req, res) => {
     const result = await pool.query(
       `SELECT o.*, sp.features
        FROM organization o
-       JOIN subscription_plan sp ON o.subscription_plan = sp.name
+       LEFT JOIN subscription_plan sp ON o.subscription_plan = sp.name
        WHERE o.id = $1`,
       [orgId],
     );

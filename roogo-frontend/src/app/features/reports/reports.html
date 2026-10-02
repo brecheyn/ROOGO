@@ -174,7 +174,7 @@
         <button class="icon-btn view" (click)="viewReport(report)">
           <mat-icon>visibility</mat-icon>
         </button>
-        <button class="icon-btn delete" (click)="deleteReport(report.id)">
+        <button class="icon-btn delete" (click)="confirmDelete(report)">
           <mat-icon>delete</mat-icon>
         </button>
       </div>
@@ -192,6 +192,28 @@
     </div>
   </div>
 
+  <!-- MODAL CONFIRMER SUPPRESSION -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+    <div class="modal modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header delete-header">
+        <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
+        <div>
+          <h2>Supprimer le rapport ?</h2>
+          <div class="modal-sub">{{ reportToDelete?.titre }}</div>
+        </div>
+        <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-warning">Cette action est irréversible.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+        <button class="action-btn danger-btn" (click)="confirmDeleteAction()">
+          <mat-icon>delete</mat-icon> Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL RAPPORT DETAIL -->
@@ -245,7 +267,7 @@
     </div>
     <div class="modal-footer">
       <button class="action-btn" (click)="closeReport()">Fermer</button>
-      <button class="action-btn delete-btn" (click)="deleteReport(selectedReport.id)">
+      <button class="action-btn delete-btn" (click)="confirmDeleteAction()">
         <mat-icon>delete</mat-icon>
         Supprimer
       </button>

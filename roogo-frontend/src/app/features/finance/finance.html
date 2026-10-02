@@ -1,0 +1,227 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Finance</div>
+      <h1>Valorisation & Analyse</h1>
+      <div class="header-meta">
+        <div class="status-dot"></div>
+        <span>FIFO, Coût moyen, simulations</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid" *ngIf="summary()">
+    <div class="summary-card" style="animation-delay: 0s">
+      <div class="sc-icon green"><mat-icon>payments</mat-icon></div>
+      <div class="sc-val">{{ summary().data.sales.monthly_revenue | number:'1.0-0' }} F</div>
+      <div class="sc-lbl">CA Mensuel</div>
+    </div>
+    <div class="summary-card" style="animation-delay: 0.06s">
+      <div class="sc-icon blue"><mat-icon>inventory_2</mat-icon></div>
+      <div class="sc-val">{{ summary().data.inventory.total_value | number:'1.0-0' }} F</div>
+      <div class="sc-lbl">Valeur Stock</div>
+    </div>
+    <div class="summary-card" style="animation-delay: 0.12s">
+      <div class="sc-icon orange"><mat-icon>schedule</mat-icon></div>
+      <div class="sc-val">{{ summary().data.financial_metrics.turnover_ratio }}x</div>
+      <div class="sc-lbl">Rotation Stock</div>
+    </div>
+    <div class="summary-card" style="animation-delay: 0.18s">
+      <div class="sc-icon red"><mat-icon>calendar_today</mat-icon></div>
+      <div class="sc-val">{{ summary().data.financial_metrics.days_of_supply }}j</div>
+      <div class="sc-lbl">Jours de Supply</div>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="custom-tabs">
+    <!-- FIFO -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">inventory</mat-icon>
+        <span class="tab-label">FIFO</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card" *ngIf="fifo()">
+          <div class="card-header">
+            <div class="card-title">Valorisation FIFO</div>
+            <div class="card-badge green">Total: {{ fifo().total_value | number:'1.0-0' }} FCFA</div>
+          </div>
+          <div class="card-body">
+            <div class="example-hint">
+              <mat-icon>info</mat-icon>
+              <span>FIFO (First In, First Out) : les premiers produits entrés sont les premiers sortis</span>
+            </div>
+            <div class="valuation-list">
+              <div class="valuation-item" *ngFor="let a of fifo().articles">
+                <div class="val-icon"><mat-icon>inventory_2</mat-icon></div>
+                <div class="val-info">
+                  <div class="val-name">{{ a.name }}</div>
+                  <div class="val-details">{{ a.stock }} unités × {{ a.price_per_unit | number:'1.0-0' }} FCFA</div>
+                </div>
+                <div class="val-total">{{ a.total_value | number:'1.0-0' }} FCFA</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- CMP -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">calculate</mat-icon>
+        <span class="tab-label">Coût Moyen</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card" *ngIf="weightedAvg()">
+          <div class="card-header">
+            <div class="card-title">Coût Moyen Pondéré</div>
+            <div class="card-badge green">Total: {{ weightedAvg().total_value | number:'1.0-0' }} FCFA</div>
+          </div>
+          <div class="card-body">
+            <div class="example-hint">
+              <mat-icon>info</mat-icon>
+              <span>CMP : prix moyen de revient pondéré par les quantités reçues</span>
+            </div>
+            <div class="valuation-list">
+              <div class="valuation-item" *ngFor="let a of weightedAvg().articles">
+                <div class="val-icon"><mat-icon>inventory_2</mat-icon></div>
+                <div class="val-info">
+                  <div class="val-name">{{ a.name_article }}</div>
+                  <div class="val-details">{{ a.current_stock }} unités × {{ a.weighted_avg_price | number:'1.0-0' }} FCFA</div>
+                </div>
+                <div class="val-total">{{ a.total_value | number:'1.0-0' }} FCFA</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Holding Cost -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">warehouse</mat-icon>
+        <span class="tab-label">Coût Possession</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card" *ngIf="holdingCost()">
+          <div class="card-header">
+            <div class="card-title">Coût de Possession du Stock</div>
+            <div class="card-badge orange">{{ holdingCost().summary.total_monthly_holding_cost | number:'1.0-0' }} F/mois</div>
+          </div>
+          <div class="card-body">
+            <div class="holding-summary">
+              <div class="hs-item">
+                <span class="hs-lbl">Valeur stock</span>
+                <span class="hs-val">{{ holdingCost().summary.total_stock_value | number:'1.0-0' }} F</span>
+              </div>
+              <div class="hs-item">
+                <span class="hs-lbl">Coût mensuel</span>
+                <span class="hs-val orange">{{ holdingCost().summary.total_monthly_holding_cost | number:'1.0-0' }} F</span>
+              </div>
+              <div class="hs-item">
+                <span class="hs-lbl">Coût annuel</span>
+                <span class="hs-val red">{{ holdingCost().summary.total_annual_holding_cost | number:'1.0-0' }} F</span>
+              </div>
+            </div>
+            <div class="example-hint">
+              <mat-icon>info</mat-icon>
+              <span>Stockage 50F/unité/mois + Assurance 2% + Obssolescence 5%</span>
+            </div>
+            <div class="valuation-list">
+              <div class="valuation-item" *ngFor="let a of holdingCost().articles">
+                <div class="val-icon"><mat-icon>inventory_2</mat-icon></div>
+                <div class="val-info">
+                  <div class="val-name">{{ a.name_article }}</div>
+                  <div class="val-details">Stockage: {{ a.storage_cost_monthly | number:'1.0-0' }}F • Assurance: {{ a.insurance_cost_monthly | number:'1.0-0' }}F</div>
+                </div>
+                <div class="val-total">{{ a.stock_value | number:'1.0-0' }} F</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Simulation -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">science</mat-icon>
+        <span class="tab-label">Simulations</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Simuler un Scénario</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Scénario</label>
+                <select [(ngModel)]="simScenario" class="form-select">
+                  <option *ngFor="let s of scenarios" [value]="s.value">{{ s.label }}</option>
+                </select>
+              </div>
+              <div class="form-field" *ngIf="simScenario === 'reduce_safety_stock'">
+                <label>Réduction du stock (%)</label>
+                <input type="number" [(ngModel)]="simParams.reduction_pct" min="1" max="90" class="form-input" placeholder="10">
+              </div>
+              <div class="form-field" *ngIf="simScenario === 'promotion_impact'">
+                <label>Réduction prix (%)</label>
+                <input type="number" [(ngModel)]="simParams.discount_pct" min="1" max="90" class="form-input" placeholder="20">
+              </div>
+              <div class="form-field" *ngIf="simScenario === 'promotion_impact'">
+                <label>Augmentation ventes (x)</label>
+                <input type="number" [(ngModel)]="simParams.expected_increase" min="1" max="10" class="form-input" placeholder="2">
+              </div>
+            </div>
+            <button class="primary-btn" (click)="runSimulation()">
+              <mat-icon>play_arrow</mat-icon> Lancer la Simulation
+            </button>
+
+            <div class="example-box" *ngIf="!simulation()">
+              <mat-icon>science</mat-icon>
+              <div>
+                <strong>Types de simulations :</strong>
+                <p><strong>Réduction stock sécurité :</strong> Libérer du capital en réduisant les stocks</p>
+                <p><strong>Impact promotion :</strong> Voir l'effet d'une réduction sur les ventes</p>
+                <p><strong>Arrêt produit :</strong> Impact de l'arrêt d'un article</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" *ngIf="simulation()" style="margin-top: 20px">
+          <div class="card-header">
+            <div class="card-title">{{ simulation().scenario }}</div>
+            <div class="card-badge" [ngClass]="(simulation().summary.total_margin_change > 0 || simulation().summary.total_freed_cash > 0) ? 'green' : 'red'">
+              {{ simulation().summary.recommendation }}
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="sim-highlight">
+              <div class="sim-val" *ngIf="simulation().summary.total_freed_cash">
+                Capital libéré : <strong>{{ simulation().summary.total_freed_cash | number:'1.0-0' }} FCFA</strong>
+              </div>
+              <div class="sim-val" *ngIf="simulation().summary.total_margin_change !== undefined">
+                Impact marge : <strong>{{ simulation().summary.total_margin_change | number:'1.0-0' }} FCFA</strong>
+              </div>
+            </div>
+            <div class="valuation-list">
+              <div class="valuation-item" *ngFor="let d of simulation().details">
+                <div class="val-icon"><mat-icon>inventory_2</mat-icon></div>
+                <div class="val-info">
+                  <div class="val-name">{{ d.article || d.name_article }}</div>
+                  <div class="val-details" *ngIf="d.freed_cash">Libéré: {{ d.freed_cash | number:'1.0-0' }}F • Nouveau stock: {{ d.new_stock }}</div>
+                  <div class="val-details" *ngIf="d.margin_change !== undefined">Marge: {{ d.margin_change | number:'1.0-0' }}F ({{ d.margin_change_pct }}%)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

@@ -424,6 +424,26 @@ $radius-sm:    10px;
   &.stock-out { background: $danger-bg;   color: $danger; }
 }
 
+.expiry-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: #eef2f0;
+  color: $muted;
+
+  .mat-icon { font-size: 15px; width: 15px; }
+  em { font-style: normal; opacity: .8; font-weight: 700; }
+
+  &.expiring { background: $warn-bg; color: $warn-color; }
+  &.expired  { background: $danger-bg; color: $danger; }
+}
+
+.expiry-none { color: $muted; opacity: .6; }
+
 .row-actions {
   display: flex;
   gap: 4px;

@@ -26,40 +26,42 @@
       <div class="form-grid">
 
         <!-- Article -->
-        <div class="form-group">
+        <div class="form-field">
           <label>Article <span class="required">*</span></label>
-          <div class="input-wrap" [class.error]="errors.id_article">
-            <mat-icon class="input-icon">inventory_2</mat-icon>
+          <div class="select-wrap" [class.active]="form.id_article" [class.error]="errors.id_article">
+            <mat-icon>inventory_2</mat-icon>
             <select [(ngModel)]="form.id_article" (change)="errors.id_article = ''">
-              <option [value]="null">Sélectionner un article...</option>
-              <option *ngFor="let a of articles" [value]="a.id">
-                {{ a.name_article }} (stock: {{ a.quantity }})
+              <option [ngValue]="null" disabled>Choisir un article...</option>
+              <option *ngFor="let a of articles" [ngValue]="a.id">
+                {{ a.name_article }} — {{ a.quantity }} en stock
               </option>
             </select>
+            <mat-icon class="arrow">expand_more</mat-icon>
           </div>
           <span class="field-error" *ngIf="errors.id_article">{{ errors.id_article }}</span>
         </div>
 
         <!-- Fournisseur -->
-        <div class="form-group">
+        <div class="form-field">
           <label>Fournisseur <span class="required">*</span></label>
-          <div class="input-wrap" [class.error]="errors.id_supplier">
-            <mat-icon class="input-icon">store</mat-icon>
+          <div class="select-wrap" [class.active]="form.id_supplier" [class.error]="errors.id_supplier">
+            <mat-icon>store</mat-icon>
             <select [(ngModel)]="form.id_supplier" (change)="errors.id_supplier = ''">
-              <option [value]="null">Sélectionner un fournisseur...</option>
-              <option *ngFor="let s of suppliers" [value]="s.id">
+              <option [ngValue]="null" disabled>Choisir un fournisseur...</option>
+              <option *ngFor="let s of suppliers" [ngValue]="s.id">
                 {{ s.name }} {{ s.surname }}
               </option>
             </select>
+            <mat-icon class="arrow">expand_more</mat-icon>
           </div>
           <span class="field-error" *ngIf="errors.id_supplier">{{ errors.id_supplier }}</span>
         </div>
 
         <!-- Quantité -->
-        <div class="form-group">
+        <div class="form-field">
           <label>Quantité <span class="required">*</span></label>
           <div class="input-wrap" [class.error]="errors.quantity">
-            <mat-icon class="input-icon">format_list_numbered</mat-icon>
+            <mat-icon>format_list_numbered</mat-icon>
             <input type="number" [(ngModel)]="form.quantity" min="1"
               placeholder="0" (input)="errors.quantity = ''" />
           </div>
@@ -67,10 +69,10 @@
         </div>
 
         <!-- Prix -->
-        <div class="form-group">
-          <label>Prix total (F CFA) <span class="required">*</span></label>
+        <div class="form-field">
+          <label>Prix total (FCFA) <span class="required">*</span></label>
           <div class="input-wrap" [class.error]="errors.price">
-            <mat-icon class="input-icon">payments</mat-icon>
+            <mat-icon>payments</mat-icon>
             <input type="number" [(ngModel)]="form.price" min="0"
               placeholder="0" (input)="errors.price = ''" />
           </div>

@@ -230,6 +230,112 @@ exports.login = async (req, res) => {
 };
 
 // ── VERIFY TOKEN ──────────────────────────────────────────────────────────────
-exports.verify = (req, res) => {
-  res.json({ success: true, user: req.user });
+exports.verify = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await pool.query(
+      `SELECT u.id, u.username, u.email, u.phone, u.role_id, r.name_role,
+              o.name AS organization_name, o.slug AS organization_slug
+       FROM "user" u
+       JOIN role r ON r.id = u.role_id
+       LEFT JOIN store s ON s.id = u.store_id
+       LEFT JOIN organization o ON o.id = s.organization_id
+       WHERE u.id = $1`,
+      [userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Utilisateur introuvable' });
+    }
+    const u = result.rows[0];
+    res.json({
+      success: true,
+      user: {
+        id: u.id,
+        username: u.username,
+        email: u.email,
+        phone: u.phone || '',
+        role: u.name_role,
+        role_id: u.role_id,
+        organizationName: u.organization_name || '',
+        organizationSlug: u.organization_slug || ''
+      }
+    });
+  } catch (error) {
+    console.error('Erreur verify:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// ── UPDATE PROFILE ────────────────────────────────────────────────────────────
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { username, email, phone, currentPassword, newPassword } = req.body;
+
+    // Récéparer l'utilisateur existant
+    const existing = await pool.query('SELECT * FROM "user" WHERE id = $1', [userId]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Utilisateur introuvable' });
+    }
+    const user = existing.rows[0];
+
+    // Si changement de mot de passe, vérifier l'ancien
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, message: 'Mot de passe actuel requis' });
+      }
+      const valid = await bcrypt.compare(currentPassword, user.password);
+      if (!valid) {
+        return res.status(400).json({ success: false, message: 'Mot de passe actuel incorrect' });
+      }
+      if (newPassword.length < 6) {
+        return res.status(400).json({ success: false, message: 'Le nouveau mot de passe doit contenir au moins 6 caractères' });
+      }
+    }
+
+    // Mise à jour
+    const newUsername = username || user.username;
+    const newEmail    = email    || user.email;
+    const newPhone    = phone    !== undefined ? phone : user.phone;
+    let newHash       = user.password;
+    if (newPassword) {
+      newHash = await bcrypt.hash(newPassword, 10);
+    }
+
+    const result = await pool.query(
+      `UPDATE "user" SET username = $1, email = $2, phone = $3, password = $4
+       WHERE id = $5 RETURNING id, username, email, phone, role_id`,
+      [newUsername, newEmail, newPhone, newHash, userId]
+    );
+
+    const updated = result.rows[0];
+
+    // Récupérer l'organisation
+    const orgResult = await pool.query(
+      `SELECT o.name AS organization_name, o.slug AS organization_slug
+       FROM "user" u
+       LEFT JOIN store s ON s.id = u.store_id
+       LEFT JOIN organization o ON o.id = s.organization_id
+       WHERE u.id = $1`,
+      [userId]
+    );
+    const org = orgResult.rows[0] || {};
+
+    res.json({
+      success: true,
+      message: 'Profil mis à jour',
+      user: {
+        id: updated.id,
+        username: updated.username,
+        email: updated.email,
+        phone: updated.phone || '',
+        role_id: updated.role_id,
+        organizationName: org.organization_name || '',
+        organizationSlug: org.organization_slug || ''
+      }
+    });
+  } catch (error) {
+    console.error('Erreur updateProfile:', error);
+    res.status(500).json({ success: false, message: 'Erreur lors de la mise à jour' });
+  }
 };

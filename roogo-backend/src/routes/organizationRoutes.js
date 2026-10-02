@@ -14,8 +14,8 @@ router.use(identifyTenant);
 // GET /api/organizations - Infos de l'organisation
 router.get('/', organizationController.getOrganization);
 
-// PUT /api/organizations - Mettre à jour l'organisation (Admin seulement)
-router.put('/', checkRole([1]), organizationController.updateOrganization);
+// PUT /api/organizations - Mettre à jour l'organisation (Admin et Manager)
+router.put('/', checkRole([1, 2]), organizationController.updateOrganization);
 
 // POST /api/organizations/upgrade - Upgrader le plan (Admin seulement)
 router.post('/upgrade', checkRole([1]), organizationController.upgradePlan);

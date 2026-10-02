@@ -149,6 +149,11 @@ $radius:            20px;
   flex-shrink: 0;
 }
 
+.avatar-img {
+  object-fit: cover; background: $sand;
+  border: 2px solid rgba($green, 0.2);
+}
+
 .avatar-name {
   font-family: 'Syne', sans-serif;
   font-size: 18px; font-weight: 700; color: $ink;
@@ -165,6 +170,41 @@ $radius:            20px;
   transition: all .2s ease; border: 1.5px solid rgba($green, 0.2);
   mat-icon { font-size: 16px; }
   &:hover { background: $green; color: $white; }
+
+  &.remove {
+    background: #fdeaea; color: $danger; border-color: rgba($danger, 0.3);
+    &:hover { background: $danger; color: $white; }
+  }
+}
+
+.upload-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.avatar-wrap {
+  position: relative; flex-shrink: 0;
+}
+
+.view-photo-btn {
+  position: absolute; bottom: -4px; right: -4px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: $green; color: $white; border: 2px solid $white;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  &:hover { transform: scale(1.1); background: $ink; }
+}
+
+.photo-viewer-body {
+  display: flex; justify-content: center; align-items: center;
+  padding: 20px;
+}
+
+.photo-viewer-img {
+  max-width: 100%; max-height: 400px;
+  border-radius: 16px;
+  object-fit: contain;
+  border: 2px solid rgba($green, 0.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
 
 // ── Form ──────────────────────────────────────────────────────────────────────
@@ -209,6 +249,14 @@ $radius:            20px;
 
 .input-icon { font-size: 18px !important; color: $muted; flex-shrink: 0; }
 .field-error { font-size: 12px; color: $danger; font-weight: 500; }
+
+.pw-toggle {
+  background: none; border: none; cursor: pointer;
+  color: $muted; display: flex; align-items: center;
+  padding: 2px; border-radius: 6px; flex-shrink: 0;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  &:hover { color: $green; background: $green-light; }
+}
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 .toggle-row {

@@ -1,0 +1,105 @@
+$green: #2D5C4A; $green-light: #e8f2ee; $gold: #D4A853; $gold-light: #fdf3dc;
+$cream: #FAF7F2; $sand: #f0ebe1; $ink: #1a2e26; $muted: #7a9189; $white: #ffffff;
+$danger: #d45353; $danger-bg: #fdeaea;
+$card-shadow: 0 2px 16px rgba(45, 92, 74, 0.08); $radius: 20px;
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rotating { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.page-container { padding: 32px 28px 60px; background: $cream; min-height: 100%; font-family: 'DM Sans', sans-serif; }
+
+.page-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1.5px solid rgba($green, 0.12);
+  .header-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: $gold; margin-bottom: 6px; }
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(26px, 4vw, 36px); font-weight: 800; color: $green; margin: 0; }
+  .header-meta { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; color: $muted; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4caf84; }
+}
+
+.refresh-btn {
+  display: flex; align-items: center; gap: 8px; background: $white; border: 1.5px solid rgba($green, 0.18);
+  border-radius: 12px; padding: 10px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  color: $green; cursor: pointer; transition: all .2s ease; box-shadow: $card-shadow;
+  &:hover:not(:disabled) { background: $green; color: $white; border-color: $green; transform: translateY(-1px); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  .mat-icon { font-size: 18px; &.rotating { animation: rotating 1s linear infinite; } }
+}
+
+.custom-tabs { background: $white; border-radius: $radius; box-shadow: $card-shadow; overflow: hidden; }
+.tab-icon { margin-right: 8px; font-size: 20px; }
+.tab-label { font-size: 13px; font-weight: 600; }
+.tab-content { padding: 24px; }
+
+.search-bar {
+  display: flex; align-items: center; gap: 10px; background: $cream; border: 1.5px solid $sand;
+  border-radius: 12px; padding: 4px 16px; margin-bottom: 20px;
+  .mat-icon { color: $muted; }
+  input { flex: 1; border: none; background: transparent; padding: 10px 0; font-family: 'DM Sans', sans-serif; font-size: 13.5px; color: $ink; outline: none; &::placeholder { color: $muted; } }
+}
+.search-btn { background: $green; color: $white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; &:hover { background: darken($green, 5%); } }
+
+.loading-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.skeleton-card { height: 200px; border-radius: $radius; background: linear-gradient(90deg, $green-light 25%, #d4ece3 50%, $green-light 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 20px; text-align: center;
+  .empty-icon { width: 72px; height: 72px; border-radius: 50%; background: $green-light; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; .mat-icon { font-size: 36px; color: $green; } }
+  .mat-icon { font-size: 48px; color: $muted; opacity: 0.4; margin-bottom: 12px; }
+  h3 { font-family: 'Syne', sans-serif; font-size: 18px; color: $ink; margin: 0 0 8px; }
+  p { font-size: 13.5px; color: $muted; margin: 0 0 16px; max-width: 400px; }
+}
+
+.example-hint { display: flex; gap: 8px; padding: 10px 14px; background: #e8f0ff; border-radius: 10px; font-size: 12px; color: #3b5fc0; .mat-icon { font-size: 16px; flex-shrink: 0; } }
+
+.listing-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.listing-card {
+  background: $white; border-radius: 16px; padding: 22px; border: 1.5px solid rgba($green, 0.07);
+  box-shadow: $card-shadow; transition: all .25s ease; animation: fadeUp .5s ease both;
+  &:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(45, 92, 74, 0.16); }
+}
+.listing-supplier { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; .mat-icon { font-size: 16px; color: $muted; } span { font-size: 12px; color: $muted; } }
+.listing-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: $ink; margin-bottom: 8px; }
+.listing-price { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: $green; margin-bottom: 10px; small { font-size: 12px; font-weight: 500; color: $muted; } }
+.listing-meta { display: flex; gap: 16px; margin-bottom: 16px; span { display: flex; align-items: center; gap: 4px; font-size: 12px; color: $muted; .mat-icon { font-size: 14px; } } }
+.order-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; background: $green; color: $white;
+  border: none; border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s ease; font-family: 'DM Sans', sans-serif;
+  &:hover { background: darken($green, 5%); }
+  .mat-icon { font-size: 18px; }
+}
+
+.card-header { display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: $green; }
+.card-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; &.green { background: $green-light; color: $green; } }
+
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.product-card { background: $cream; border-radius: 12px; padding: 16px; }
+.product-id { font-size: 10px; color: $muted; margin-bottom: 4px; font-family: monospace; }
+.product-title { font-weight: 600; color: $ink; font-size: 14px; margin-bottom: 6px; }
+.product-price { font-family: 'Syne', sans-serif; font-weight: 700; color: $green; font-size: 18px; margin-bottom: 8px; }
+.product-meta { display: flex; gap: 8px; }
+.product-cat { font-size: 11px; background: $sand; padding: 3px 8px; border-radius: 10px; color: $muted; }
+.product-stock { font-size: 11px; padding: 3px 8px; border-radius: 10px; &.in_stock { background: #e6f9f1; color: #2b9e6c; } &.low_stock { background: $gold-light; color: darken($gold, 15%); } &.out_of_stock { background: $danger-bg; color: $danger; } }
+
+.example-box { display: flex; gap: 12px; margin-top: 20px; padding: 16px; background: #e8f0ff; border-radius: 12px; font-size: 12.5px; color: #3b5fc0; line-height: 1.5; .mat-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; } p { margin: 4px 0 0; } code { background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 4px; font-size: 11px; } }
+
+.primary-btn { display: flex; align-items: center; gap: 8px; background: $green; color: $white; border: none; border-radius: 12px; padding: 12px 24px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s ease; &:hover { background: darken($green, 5%); transform: translateY(-1px); } .mat-icon { font-size: 18px; } }
+
+.alert-list { display: flex; flex-direction: column; gap: 10px; }
+.alert-item {
+  display: flex; align-items: flex-start; gap: 14px; padding: 16px; border-radius: 12px;
+  &.alert-low_stock { background: $gold-light; border: 1px solid rgba($gold, 0.3); }
+  &.alert-expiry_warning { background: $danger-bg; border: 1px solid rgba($danger, 0.2); }
+  &.alert-out_of_stock { background: $danger-bg; border: 1px solid rgba($danger, 0.3); }
+}
+.alert-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  .alert-low_stock & { background: rgba($gold, 0.2); color: $gold; }
+  .alert-expiry_warning &, .alert-out_of_stock & { background: rgba($danger, 0.15); color: $danger; }
+  .mat-icon { font-size: 20px; }
+}
+.alert-title { font-weight: 600; font-size: 14px; display: block; color: $ink; }
+.alert-desc { font-size: 12.5px; color: $muted; display: block; margin-top: 2px; }
+
+@media (max-width: 768px) { .page-container { padding: 20px 16px 40px; } .page-header { flex-direction: column; align-items: flex-start; gap: 16px; } }

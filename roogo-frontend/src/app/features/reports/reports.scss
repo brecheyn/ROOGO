@@ -457,49 +457,7 @@ $radius:            20px;
   animation: spin .8s linear infinite;
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba($ink, 0.4); backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1000; animation: fadeUp .2s ease;
-  padding: 20px;
-}
-
-.modal {
-  background: $white; border-radius: $radius;
-  width: 100%; max-width: 560px;
-  box-shadow: 0 20px 60px rgba($ink, 0.2);
-  overflow: hidden; max-height: 90vh;
-  display: flex; flex-direction: column;
-  &.modal-lg { max-width: 680px; }
-}
-
-.modal-header {
-  display: flex; align-items: flex-start;
-  justify-content: space-between;
-  padding: 22px 24px; border-bottom: 1px solid $sand;
-  flex-shrink: 0;
-
-  h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: $ink; margin: 0 0 6px; }
-  .modal-meta { font-size: 12px; color: $muted; }
-}
-
-.modal-close {
-  width: 36px; height: 36px; border-radius: 10px;
-  border: 1.5px solid rgba($green, 0.15); background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: $muted; transition: all .2s ease;
-  flex-shrink: 0;
-  &:hover { background: $danger-bg; color: $danger; border-color: $danger; }
-}
-
-.modal-body {
-  padding: 20px 24px;
-  overflow-y: auto; flex: 1;
-  display: flex; flex-direction: column; gap: 16px;
-}
-
+// ── Modal Content (uses global modal styles) ───────────────────────────────────
 .modal-section {
   background: $cream; border-radius: 12px; padding: 14px 16px;
 }
@@ -517,12 +475,6 @@ $radius:            20px;
 .modal-text {
   font-size: 13.5px; color: $ink; line-height: 1.6;
   &.danger { color: $danger; }
-}
-
-.modal-footer {
-  display: flex; justify-content: flex-end; gap: 10px;
-  padding: 12px 24px 20px; flex-shrink: 0;
-  border-top: 1px solid $sand;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────

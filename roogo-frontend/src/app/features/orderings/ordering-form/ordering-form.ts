@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -25,9 +25,11 @@ export class OrderingFormComponent implements OnInit {
 
   private apiUrl = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit(): void {
+    const articleId = Number(this.route.snapshot.queryParamMap.get('id_article'));
+    if (articleId) this.form.id_article = articleId;
     this.loadArticles();
     this.loadSuppliers();
   }
@@ -68,7 +70,14 @@ export class OrderingFormComponent implements OnInit {
     if (!this.validate()) return;
     this.saving = true;
 
-    this.http.post<any>(`${this.apiUrl}/orderings`, this.form, { headers: this.headers() })
+    const payload = {
+      id_article: Number(this.form.id_article),
+      id_supplier: Number(this.form.id_supplier),
+      quantity: Number(this.form.quantity),
+      price: Number(this.form.price),
+    };
+
+    this.http.post<any>(`${this.apiUrl}/orderings`, payload, { headers: this.headers() })
       .subscribe({
         next: () => {
           this.saving = false;

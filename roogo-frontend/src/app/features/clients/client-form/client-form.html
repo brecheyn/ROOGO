@@ -47,7 +47,7 @@
         <div class="form-group">
           <label>Nom <span class="required">*</span></label>
           <div class="input-wrap" [class.error]="errors.name">
-            <mat-icon input-icon>person</mat-icon>
+            <mat-icon class="input-icon">person</mat-icon>
             <input
               type="text"
               [(ngModel)]="form.name"
@@ -61,7 +61,7 @@
         <div class="form-group">
           <label>Prénom <span class="required">*</span></label>
           <div class="input-wrap" [class.error]="errors.surname">
-            <mat-icon input-icon>person_outline</mat-icon>
+            <mat-icon class="input-icon">person_outline</mat-icon>
             <input
               type="text"
               [(ngModel)]="form.surname"
@@ -75,11 +75,11 @@
         <div class="form-group">
           <label>Téléphone</label>
           <div class="input-wrap">
-            <mat-icon input-icon>phone</mat-icon>
+            <mat-icon class="input-icon">phone</mat-icon>
             <input
               type="text"
               [(ngModel)]="form.phone"
-              placeholder="Ex: +226 70 00 00 00"
+              placeholder="Ex: +225 07 08 12 34"
             />
           </div>
         </div>
@@ -87,11 +87,11 @@
         <div class="form-group full-width">
           <label>Adresse</label>
           <div class="input-wrap">
-            <mat-icon input-icon>location_on</mat-icon>
+            <mat-icon class="input-icon">location_on</mat-icon>
             <input
               type="text"
               [(ngModel)]="form.address"
-              placeholder="Ex: Secteur 15, Ouagadougou"
+              placeholder="Ex: Abidjan, Cocody"
             />
           </div>
         </div>

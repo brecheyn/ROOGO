@@ -3,7 +3,7 @@ const pool = require('../config/database');
 // Récupérer tous les clients
 exports.getAllClients = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM client ORDER BY id');
+    const result = await pool.query('SELECT * FROM client WHERE organization_id = $1 ORDER BY id', [req.organizationId]);
     res.json({
       success: true,
       count: result.rows.length,
@@ -22,7 +22,7 @@ exports.getAllClients = async (req, res) => {
 exports.getClientById = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM client WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM client WHERE id = $1 AND organization_id = $2', [id, req.organizationId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -57,8 +57,8 @@ exports.createClient = async (req, res) => {
     }
 
     const result = await pool.query(
-      'INSERT INTO client (name, surname, phone, address) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, surname, phone, address]
+      'INSERT INTO client (name, surname, phone, address, organization_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, surname, phone, address, req.organizationId]
     );
 
     res.status(201).json({
@@ -82,8 +82,8 @@ exports.updateClient = async (req, res) => {
     const { name, surname, phone, address } = req.body;
 
     const result = await pool.query(
-      'UPDATE client SET name = $1, surname = $2, phone = $3, address = $4 WHERE id = $5 RETURNING *',
-      [name, surname, phone, address, id]
+      'UPDATE client SET name = $1, surname = $2, phone = $3, address = $4 WHERE id = $5 AND organization_id = $6 RETURNING *',
+      [name, surname, phone, address, id, req.organizationId]
     );
 
     if (result.rows.length === 0) {
@@ -112,7 +112,7 @@ exports.deleteClient = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query('DELETE FROM client WHERE id = $1 RETURNING *', [id]);
+    const result = await pool.query('DELETE FROM client WHERE id = $1 AND organization_id = $2 RETURNING *', [id, req.organizationId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({

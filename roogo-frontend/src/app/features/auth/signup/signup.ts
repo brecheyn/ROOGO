@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
 import { AssetsService } from '../../../core/services/assets.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-signup',
@@ -77,7 +78,8 @@ export class SignupComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
-    public assetsService: AssetsService
+    public assetsService: AssetsService,
+    private toast: ToastService
   ) {}
 
   // ── Navigation entre étapes ────────────────────────────────────────────────
@@ -137,11 +139,13 @@ export class SignupComponent {
     this.auth.signup(this.formData).subscribe({
       next: () => {
         this.loading = false;
+        this.toast.success('Compte créé avec succès ! Bienvenue sur ROOGO.');
         this.router.navigate(['/dashboard']);
       },
       error: (err: any) => {
         this.loading      = false;
         this.errorMessage = err?.error?.message || 'Erreur lors de la création du compte.';
+        this.toast.error(this.errorMessage);
       }
     });
   }

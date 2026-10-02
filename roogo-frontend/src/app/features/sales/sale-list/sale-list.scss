@@ -58,6 +58,17 @@ $radius:            20px;
     font-size: clamp(26px, 4vw, 40px);
     font-weight: 800; color: $green;
     line-height: 1; letter-spacing: -1px; margin: 0;
+
+    .store-badge {
+      font-size: 0.55em;
+      font-weight: 600;
+      color: $gold;
+      background: $gold-light;
+      padding: 4px 14px;
+      border-radius: 20px;
+      vertical-align: middle;
+      letter-spacing: 0;
+    }
   }
 
   .header-meta {
@@ -289,40 +300,7 @@ $radius:            20px;
   p { font-size: 14px; margin: 0; }
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba($ink, 0.4); backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1000; animation: fadeUp .2s ease;
-}
-
-.modal {
-  background: $white; border-radius: $radius;
-  width: 100%; max-width: 560px;
-  box-shadow: 0 20px 60px rgba($ink, 0.2); overflow: hidden;
-  &.modal-lg { max-width: 660px; }
-}
-
-.modal-header {
-  display: flex; align-items: flex-start;
-  justify-content: space-between;
-  padding: 22px 24px; border-bottom: 1px solid $sand;
-
-  h2 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: $ink; margin: 0 0 8px; }
-}
-
-.modal-close {
-  width: 36px; height: 36px; border-radius: 10px;
-  border: 1.5px solid rgba($green, 0.15); background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: $muted; transition: all .2s ease;
-  flex-shrink: 0;
-  &:hover { background: $danger-bg; color: $danger; border-color: $danger; }
-}
-
-.modal-body { padding: 20px 24px; }
-
+// ── Detail Modal Content ──────────────────────────────────────────────────────
 .detail-info-row {
   display: flex; gap: 24px;
   padding-bottom: 20px; margin-bottom: 20px;
@@ -371,9 +349,80 @@ $radius:            20px;
   }
 }
 
-.modal-footer {
-  display: flex; justify-content: flex-end; gap: 10px;
-  padding: 12px 24px 20px;
+// ── Edit Modal Form ──────────────────────────────────────────────────────────
+.edit-form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+}
+
+.form-field {
+  display: flex; flex-direction: column; gap: 6px;
+
+  label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase; color: $muted;
+  }
+
+  select, input {
+    border: 1.5px solid rgba($green, 0.2); border-radius: 10px;
+    padding: 10px 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: $ink; background: $white;
+    outline: none; transition: border-color .2s ease;
+    &:focus { border-color: $green; }
+  }
+}
+
+.date-input-wrap {
+  position: relative; display: flex; align-items: center;
+
+  input {
+    width: 100%; padding-right: 40px;
+    &::-webkit-calendar-picker-indicator { opacity: 0; cursor: pointer; position: absolute; right: 0; width: 40px; height: 100%; }
+  }
+
+  .date-icon-btn {
+    position: absolute; right: 6px;
+    background: none; border: none; cursor: pointer;
+    color: $green; display: flex; align-items: center;
+    padding: 4px; border-radius: 6px;
+    &:hover { background: $green-light; }
+    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  }
+}
+
+.add-line-row {
+  display: flex; gap: 10px; margin-bottom: 16px; align-items: center;
+
+  select {
+    flex: 1; border: 1.5px solid rgba($green, 0.2); border-radius: 10px;
+    padding: 10px 12px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: $ink; background: $white; outline: none;
+    &:focus { border-color: $green; }
+  }
+
+  .qty-input {
+    width: 70px; border: 1.5px solid rgba($green, 0.2); border-radius: 10px;
+    padding: 10px; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: $ink; text-align: center; outline: none;
+    &:focus { border-color: $green; }
+  }
+
+  .action-btn {
+    flex-shrink: 0; background: $green; color: $white; border-color: $green;
+    padding: 10px 16px;
+  }
+}
+
+.inline-qty {
+  width: 60px; border: 1.5px solid rgba($green, 0.2); border-radius: 8px;
+  padding: 6px 8px; font-size: 13px; text-align: center;
+  font-family: 'DM Sans', sans-serif; outline: none; color: $ink;
+  &:focus { border-color: $green; }
+}
+
+.btn-spinner {
+  display: inline-block; width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: $white;
+  border-radius: 50%; animation: spin .7s linear infinite;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
@@ -382,4 +431,6 @@ $radius:            20px;
   .dashboard-header { flex-direction: column; align-items: flex-start; gap: 16px; }
   .stats-grid { grid-template-columns: 1fr; }
   .search-bar { max-width: 100%; }
+  .edit-form-grid { grid-template-columns: 1fr; }
+  .add-line-row { flex-wrap: wrap; }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, Inject, PLATFORM_ID, effect } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import { ChartConfiguration } from 'chart.js';
 import { interval, Subscription, of } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { StoreService } from '../../core/services/store.service';
 
 interface DashboardStats {
   chiffreAffairesMois: number;
@@ -98,9 +99,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) platformId: Object
+    @Inject(PLATFORM_ID) platformId: Object,
+    public storeService: StoreService,
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
+    effect(() => {
+      const _storeId = this.storeService.currentStoreId();
+      if (this.isBrowser) {
+        this.loadAll();
+      }
+    });
   }
 
   // ===============================
@@ -109,7 +117,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (this.isBrowser) {
-      this.loadAll();
       this.startAutoRefresh();
     }
   }
@@ -126,7 +133,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.hasError = false;
 
-    this.get<DashboardStats>('stats').subscribe({
+    const storeId = this.storeService.currentStoreId();
+    const sid = storeId ? `&store_id=${storeId}` : '';
+    const sidQ = storeId ? `?store_id=${storeId}` : '';
+
+    this.get<DashboardStats>('stats' + sidQ).subscribe({
       next: (data) => {
         this.stats = data ?? this.emptyStats();
         this.isLoading = false;
@@ -138,13 +149,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.get<TopArticle[]>('top-articles?limit=5')
+    this.get<TopArticle[]>('top-articles?limit=5' + sid)
       .subscribe(data => this.topArticles = data ?? []);
 
     this.get<StockAlert[]>('stock-alerts')
       .subscribe(data => this.stockAlerts = data ?? []);
 
-    this.get<RecentSale[]>('recent-sales?limit=5')
+    this.get<RecentSale[]>('recent-sales?limit=5' + sid)
       .subscribe(data => {
         this.recentSales = (data ?? []).map((s: RecentSale) => ({
           ...s,
@@ -152,7 +163,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }));
       });
 
-    this.get<ChartConfiguration<'line'>['data']>('sales-chart?days=7')
+    this.get<ChartConfiguration<'line'>['data']>('sales-chart?days=7' + sid)
       .subscribe(data => {
         data ? this.salesChartData = data : this.initEmptyChart();
       });
@@ -162,10 +173,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (!this.isBrowser) return;
 
     this.refreshSub = interval(30000).pipe(
-      switchMap(() =>
-        this.get<DashboardStats>('stats')
-          .pipe(catchError(() => of(null)))
-      )
+      switchMap(() => {
+        const storeId = this.storeService.currentStoreId();
+        const sidQ = storeId ? `?store_id=${storeId}` : '';
+        return this.get<DashboardStats>('stats' + sidQ)
+          .pipe(catchError(() => of(null)));
+      })
     ).subscribe(data => {
       if (data) {
         this.stats = data;

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // ── Variables ─────────────────────────────────────────────────────────────────
 $green:        #2D5C4A;
 $green-light:  #e8f2ee;
@@ -55,6 +57,17 @@ $radius:            20px;
     font-size: clamp(26px, 4vw, 40px);
     font-weight: 800; color: $green;
     line-height: 1; letter-spacing: -1px; margin: 0;
+
+    .store-badge {
+      font-size: 0.55em;
+      font-weight: 600;
+      color: $gold;
+      background: $gold-light;
+      padding: 4px 14px;
+      border-radius: 20px;
+      vertical-align: middle;
+      letter-spacing: 0;
+    }
   }
   .header-meta {
     display: flex; align-items: center;
@@ -312,3 +325,138 @@ $radius:            20px;
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .search-bar { max-width: 100%; }
 }
+
+// ── Cartes commandes ─────────────────────────────────────────────────────────
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.order-card {
+  background: $white;
+  border-radius: 16px;
+  border: 1.5px solid rgba($green, 0.07);
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  animation: fadeUp .4s ease both;
+  transition: all .2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $card-shadow-hover;
+  }
+}
+
+.order-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px 0;
+}
+
+.order-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: $warning-bg; display: flex; align-items: center; justify-content: center;
+  .mat-icon { font-size: 20px; color: $warning; }
+  &.received { background: $success-bg; .mat-icon { color: $success; } }
+}
+
+.order-id {
+  flex: 1;
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: $ink;
+}
+
+.order-actions { display: flex; gap: 4px; }
+
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all .15s ease;
+  .mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  &.edit { background: $green-light; color: $green; &:hover { background: $green; color: $white; } }
+  &.delete { background: $danger-bg; color: $danger; &:hover { background: $danger; color: $white; } }
+}
+
+.order-card-body {
+  padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.order-article, .order-supplier {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: $ink; font-weight: 500;
+  .mat-icon { font-size: 16px; color: $muted; width: 16px; height: 16px; }
+}
+
+.order-card-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  padding: 0 18px 14px;
+}
+
+.order-stat {
+  text-align: center; padding: 8px; background: $cream; border-radius: 10px;
+  .stat-val { display: block; font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: $green; }
+  .stat-lbl { font-size: 10px; color: $muted; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; display: block; }
+}
+
+.order-card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 18px; border-top: 1px solid $sand;
+}
+
+.order-date {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: $muted;
+  .mat-icon { font-size: 14px; width: 14px; height: 14px; }
+}
+
+.status-badge {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  &.status-success { background: $success-bg; color: $success; }
+  &.status-warning { background: $warning-bg; color: $warning; }
+}
+
+.receive-btn-full {
+  width: 100%; padding: 10px; border: none; border-top: 1px solid $sand;
+  background: transparent; color: $green; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s ease;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  .mat-icon { font-size: 18px; }
+  &:hover { background: $green-light; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Form fields (pour modaux) ────────────────────────────────────────────────
+.form-field {
+  display: flex; flex-direction: column; gap: 6px;
+  label { font-size: 12px; font-weight: 600; color: $ink; text-transform: uppercase; letter-spacing: 0.5px; }
+  .required { color: $danger; }
+}
+
+.input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  border: 1.5px solid $sand; border-radius: 10px; padding: 10px 14px;
+  background: $cream; transition: all .2s ease;
+  &:focus-within { border-color: $green; background: $white; }
+  mat-icon { font-size: 18px; color: $muted; flex-shrink: 0; }
+  input, select { flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: $ink; background: transparent; }
+}
+
+.action-btn {
+  display: flex; align-items: center; gap: 8px; background: $white; border: 1.5px solid rgba($green, 0.18);
+  border-radius: 10px; padding: 10px 18px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  color: $green; cursor: pointer; transition: all .2s ease;
+  &:hover { background: $green-light; }
+  &.submit { background: $green; color: $white; border-color: $green; &:hover { background: color.adjust($green, $lightness: -5%); } &:disabled { opacity: 0.5; cursor: not-allowed; } }
+  &.delete-btn { background: $danger !important; border-color: $danger !important; &:hover { background: color.adjust($danger, $lightness: -8%) !important; } }
+}
+
+.btn-spinner {
+  width: 14px; height: 14px; border: 2px solid rgba($white, 0.4);
+  border-top-color: $white; border-radius: 50%; animation: spin .7s linear infinite;
+  &.sm { width: 12px; height: 12px; border-width: 1.5px; border-top-color: $green; }
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

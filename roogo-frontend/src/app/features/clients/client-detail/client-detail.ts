@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-client-detail',
@@ -31,7 +32,8 @@ export class ClientDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient
+    private http: HttpClient,
+    private toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -114,8 +116,9 @@ export class ClientDetailComponent implements OnInit {
       next: (res) => {
         this.client = res.data;
         this.closeModal();
+        this.toast.success('Client modifié avec succès');
       },
-      error: (err) => console.error('Erreur modification:', err)
+      error: (err) => this.toast.error(err?.error?.message || 'Erreur lors de la modification')
     });
   }
 
@@ -124,7 +127,7 @@ export class ClientDetailComponent implements OnInit {
       this.http.delete(`${this.apiUrl}/clients/${this.client.id}`, { headers: this.getHeaders() })
         .subscribe({
           next: () => this.router.navigate(['/clients']),
-          error: (err) => console.error('Erreur suppression:', err)
+          error: (err) => this.toast.error(err?.error?.message || 'Erreur lors de la suppression')
         });
     }
   }

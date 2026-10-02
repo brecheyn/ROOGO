@@ -154,6 +154,21 @@
         </td>
       </ng-container>
 
+      <!-- Date de péremption -->
+      <ng-container matColumnDef="expiration_date">
+        <th mat-header-cell *matHeaderCellDef>Péremption</th>
+        <td mat-cell *matCellDef="let a">
+          <span *ngIf="!a.expiration_date" class="expiry-none">—</span>
+          <span *ngIf="a.expiration_date" class="expiry-chip" [ngClass]="getExpiryClass(a.expiration_date)">
+            <mat-icon>event</mat-icon>
+            {{ a.expiration_date | date:'dd/MM/yyyy' }}
+            <em *ngIf="daysUntilExpiry(a.expiration_date) !== null">
+              ({{ daysUntilExpiry(a.expiration_date) }} j)
+            </em>
+          </span>
+        </td>
+      </ng-container>
+
       <!-- Actions -->
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
@@ -162,7 +177,7 @@
             <button mat-icon-button (click)="openEditDialog(a)" matTooltip="Modifier">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button class="delete-btn" (click)="deleteArticle(a)" matTooltip="Supprimer">
+            <button mat-icon-button class="delete-btn" (click)="confirmDelete(a)" matTooltip="Supprimer">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -178,4 +193,27 @@
     </div>
   </div>
 
+</div>
+
+<!-- MODAL CONFIRMER SUPPRESSION -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header delete-header">
+      <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
+      <div>
+        <h2>Supprimer l'article ?</h2>
+        <div class="modal-sub">{{ articleToDelete?.nom }}</div>
+      </div>
+      <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <p class="delete-warning">Cette action est irréversible.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+      <button class="action-btn danger-btn" (click)="confirmDeleteAction()">
+        <mat-icon>delete</mat-icon> Supprimer
+      </button>
+    </div>
+  </div>
 </div>

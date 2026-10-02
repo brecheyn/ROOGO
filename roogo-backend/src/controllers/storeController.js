@@ -4,17 +4,10 @@ const pool = require('../config/database');
 exports.getAllStores = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM store ORDER BY id');
-    res.json({
-      success: true,
-      count: result.rows.length,
-      data: result.rows
-    });
+    res.json(result.rows);
   } catch (error) {
     console.error('Erreur:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la récupération des magasins'
-    });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
@@ -22,30 +15,56 @@ exports.getAllStores = async (req, res) => {
 exports.createStore = async (req, res) => {
   try {
     const { name, adresse, phone, email_adresse } = req.body;
-
     if (!name) {
-      return res.status(400).json({
-        success: false,
-        message: 'Le nom du magasin est obligatoire'
-      });
+      return res.status(400).json({ success: false, message: 'Le nom est obligatoire' });
+    }
+    const result = await pool.query(
+      'INSERT INTO store (name, adresse, phone, email_adresse, organization_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, adresse, phone, email_adresse, req.organizationId]
+    );
+    res.status(201).json({ success: true, message: 'Magasin créé', data: result.rows[0] });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// Modifier un magasin
+exports.updateStore = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, adresse, phone, email_adresse } = req.body;
+
+    const existing = await pool.query('SELECT * FROM store WHERE id = $1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Magasin non trouvé' });
     }
 
     const result = await pool.query(
-      'INSERT INTO store (name, adresse, phone, email_adresse) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, adresse, phone, email_adresse]
+      `UPDATE store SET name = $1, adresse = $2, phone = $3, email_adresse = $4 WHERE id = $5 RETURNING *`,
+      [name || existing.rows[0].name, adresse || existing.rows[0].adresse, phone || existing.rows[0].phone, email_adresse || existing.rows[0].email_adresse, id]
     );
-
-    res.status(201).json({
-      success: true,
-      message: 'Magasin créé avec succès',
-      data: result.rows[0]
-    });
+    res.json({ success: true, message: 'Magasin modifié', data: result.rows[0] });
   } catch (error) {
     console.error('Erreur:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la création du magasin'
-    });
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// Supprimer un magasin
+exports.deleteStore = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await pool.query('SELECT * FROM store WHERE id = $1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Magasin non trouvé' });
+    }
+
+    await pool.query('DELETE FROM store WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Magasin supprimé' });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 

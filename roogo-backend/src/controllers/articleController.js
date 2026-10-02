@@ -3,7 +3,7 @@ const pool = require('../config/database');
 // Récupérer tous les articles
 exports.getAllArticles = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM article ORDER BY id');
+    const result = await pool.query('SELECT * FROM article WHERE organization_id = $1 ORDER BY id', [req.organizationId]);
     res.json({
       success: true,
       count: result.rows.length,
@@ -22,7 +22,7 @@ exports.getAllArticles = async (req, res) => {
 exports.getArticleById = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM article WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM article WHERE id = $1 AND organization_id = $2', [id, req.organizationId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -47,7 +47,7 @@ exports.getArticleById = async (req, res) => {
 // Créer un article
 exports.createArticle = async (req, res) => {
   try {
-    const { name_article, categorie, quantity, unit_price, date_manufacture, expiration_date } = req.body;
+    const { name_article, categorie, description, quantity, unit_price, date_manufacture, expiration_date } = req.body;
 
     if (!name_article || !categorie) {
       return res.status(400).json({
@@ -57,9 +57,9 @@ exports.createArticle = async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO article (name_article, categorie, quantity, unit_price, date_manufacture, expiration_date) 
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [name_article, categorie, quantity || 0, unit_price, date_manufacture, expiration_date]
+      `INSERT INTO article (name_article, categorie, description, quantity, unit_price, date_manufacture, expiration_date, organization_id) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [name_article, categorie, description || null, quantity || 0, unit_price, date_manufacture, expiration_date, req.organizationId || null]
     );
 
     res.status(201).json({
@@ -80,13 +80,13 @@ exports.createArticle = async (req, res) => {
 exports.updateArticle = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name_article, categorie, quantity, unit_price, date_manufacture, expiration_date } = req.body;
+    const { name_article, categorie, description, quantity, unit_price, date_manufacture, expiration_date } = req.body;
 
     const result = await pool.query(
-      `UPDATE article SET name_article = $1, categorie = $2, quantity = $3, 
-       unit_price = $4, date_manufacture = $5, expiration_date = $6 
-       WHERE id = $7 RETURNING *`,
-      [name_article, categorie, quantity, unit_price, date_manufacture, expiration_date, id]
+      `UPDATE article SET name_article = $1, categorie = $2, description = $3, quantity = $4, 
+       unit_price = $5, date_manufacture = $6, expiration_date = $7 
+       WHERE id = $8 AND organization_id = $9 RETURNING *`,
+      [name_article, categorie, description || null, quantity, unit_price, date_manufacture, expiration_date, id, req.organizationId]
     );
 
     if (result.rows.length === 0) {
@@ -115,7 +115,7 @@ exports.deleteArticle = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query('DELETE FROM article WHERE id = $1 RETURNING *', [id]);
+    const result = await pool.query('DELETE FROM article WHERE id = $1 AND organization_id = $2 RETURNING *', [id, req.organizationId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({

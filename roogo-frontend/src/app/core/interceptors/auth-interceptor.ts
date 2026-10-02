@@ -21,9 +21,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(error => {
       if (error.status === 401) {
-        // Token expiré ou invalide
-        authService.logout();
-        router.navigate(['/login']);
+        // NE PAS déconnecter automatiquement - laisser le composant gérer l'erreur
+        // Seulement rediriger si c'est une erreur d'auth réelle (pas un 401 transitoire)
+        console.warn('API 401:', error.url);
+        // On ne fait PAS logout() ici - on laisse le composant décider
       }
       return throwError(() => error);
     })

@@ -1,0 +1,22 @@
+# Dépendances
+node_modules/
+
+# Build Angular
+dist/
+.angular/
+coverage/
+
+# Secrets — ne JAMAIS committer
+.env
+.env.*
+!.env.example
+
+# Logs / OS
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Vercel / dumps de base locaux
+.vercel/
+*.dump.sql

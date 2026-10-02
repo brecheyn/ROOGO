@@ -1,58 +1,39 @@
+$green: #2D5C4A; $green-light: #e8f2ee; $gold: #D4A853; $cream: #FAF7F2;
+$sand: #f0ebe1; $ink: #1a2e26; $muted: #7a9189;
 
-    
-      .navbar {
-        background: white;
-        color: #333;
-        border-bottom: 1px solid #e0e0e0;
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        height: 70px;
-        padding: 0 1rem;
-      }
+.navbar {
+  background: white; color: #333; border-bottom: 1px solid #e0e0e0;
+  position: sticky; top: 0; z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); height: 70px; padding: 0 1rem;
+}
 
-      .navbar-left {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex: 1;
-      }
+.navbar-left { display: flex; align-items: center; gap: 0.5rem; flex: 1; }
+.org-name { font-size: 1.1rem; font-weight: 700; color: $green; margin: 0; }
 
-      .logo {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #2196f3;
-        margin: 0;
-      }
+.navbar-center { display: flex; align-items: center; }
 
-      .navbar-right {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
+.store-selector {
+  display: flex; align-items: center; gap: 8px;
+  background: $cream; border: 1.5px solid $sand; border-radius: 12px;
+  padding: 8px 14px; cursor: pointer; transition: all .2s ease;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: $ink;
+  &:hover { border-color: $green; background: $green-light; }
+  mat-icon { font-size: 18px; color: $green; }
+  .arrow { font-size: 18px !important; color: $muted; transition: transform .2s; }
+}
 
-      .user-avatar {
-        margin-left: 0.5rem;
-      }
+.navbar-right { display: flex; align-items: center; gap: 0.5rem; }
+.user-avatar { margin-left: 0.5rem; }
+.avatar-circle {
+  width: 40px; height: 40px; border-radius: 50%;
+  background-color: $green; color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 500;
+}
 
-      .avatar-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #2196f3;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        font-weight: 500;
-      }
+::ng-deep .mat-toolbar { display: flex; justify-content: space-between; align-items: center; }
 
-      ::ng-deep .mat-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-    
-  
+::ng-deep .store-menu {
+  .mat-mdc-menu-item.active { background: $green-light; color: $green; }
+  .mat-mdc-menu-item { font-family: 'DM Sans', sans-serif; }
+}

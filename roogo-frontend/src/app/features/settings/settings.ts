@@ -5,6 +5,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { StoreService } from '../../core/services/store.service';
 
 @Component({
   selector: 'app-settings',
@@ -21,7 +22,7 @@ export class SettingsComponent implements OnInit {
   profile = { username: '', email: '', phone: '', role: '' };
   security = { currentPassword: '', newPassword: '', confirmPassword: '',
                 twoFactorEnabled: false, loginNotifications: true };
-  organization = { name: 'Ma Boutique SARL', industry: 'retail', size: '1-10',
+  organization = { name: '', industry: 'retail', size: '1-10',
                    address: '', city: 'Ouagadougou', country: 'Burkina Faso' };
   notifications: any = { newSales: true, lowStock: true, newClients: true,
                           weeklyReports: false, emailEnabled: true, pushEnabled: true };
@@ -59,12 +60,18 @@ export class SettingsComponent implements OnInit {
   dateFormats  = [{ label: 'DD/MM/YYYY', value: 'DD/MM/YYYY' }, { label: 'MM/DD/YYYY', value: 'MM/DD/YYYY' }];
 
   selectedFile: File | null = null;
+  profilePhoto: string | null = null;
+  showPhotoViewer = false;
+  showCurrentPw = false;
+  showNewPw = false;
+  showConfirmPw = false;
   private apiUrl = 'http://localhost:3000/api';
 
   constructor(
     private http: HttpClient,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private storeService: StoreService
   ) {}
 
   ngOnInit(): void {
@@ -73,9 +80,28 @@ export class SettingsComponent implements OnInit {
         this.currentUser  = user;
         this.profile.username = user.username;
         this.profile.email    = user.email;
+        this.profile.phone    = (user as any).phone || '';
         this.profile.role     = user.role || 'Utilisateur';
       }
     });
+    this.profilePhoto = localStorage.getItem('profile_photo');
+    this.loadOrganization();
+  }
+
+  loadOrganization(): void {
+    this.http.get<any>(`${this.apiUrl}/organizations`, { headers: this.getHeaders() })
+      .subscribe({
+        next: (res) => {
+          if (res.success && res.data?.organization) {
+            const org = res.data.organization;
+            this.organization.name    = org.name || '';
+            this.organization.address = org.address || '';
+            this.organization.city    = org.city || 'Ouagadougou';
+            this.organization.country = org.country || 'Burkina Faso';
+          }
+        },
+        error: () => {}
+      });
   }
 
   private getHeaders(): HttpHeaders {
@@ -90,13 +116,101 @@ export class SettingsComponent implements OnInit {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files?.length) {
-      this.selectedFile = input.files[0];
-      this.notificationService.success('Photo sélectionnée');
+      const file = input.files[0];
+      if (!file.type.startsWith('image/')) {
+        this.notificationService.error('Veuillez sélectionner une image');
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        this.notificationService.error('Image trop volumineuse (max 2 Mo)');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.profilePhoto = reader.result as string;
+        this.selectedFile = file;
+        this.storeService.setProfilePhoto(this.profilePhoto);
+        this.notificationService.success('Photo sélectionnée');
+      };
+      reader.readAsDataURL(file);
+      input.value = '';
     }
   }
 
-  saveProfile(): void       { this.notificationService.success('Profil enregistré'); }
-  saveOrganization(): void  { this.notificationService.success('Organisation mise à jour'); }
+  removePhoto(): void {
+    this.profilePhoto = null;
+    this.selectedFile = null;
+    this.storeService.setProfilePhoto(null);
+    this.notificationService.success('Photo supprimée');
+  }
+
+  saveProfile(): void {
+    if (this.profilePhoto) {
+      this.storeService.setProfilePhoto(this.profilePhoto);
+    }
+
+    const payload: any = {
+      username: this.profile.username,
+      email: this.profile.email,
+      phone: this.profile.phone || '',
+    };
+
+    // Si un changement de mot de passe est en cours
+    if (this.security.newPassword) {
+      if (this.security.newPassword !== this.security.confirmPassword) {
+        this.notificationService.error('Les mots de passe ne correspondent pas');
+        return;
+      }
+      payload.currentPassword = this.security.currentPassword;
+      payload.newPassword = this.security.newPassword;
+    }
+
+    this.http.put<any>(`${this.apiUrl}/auth/profile`, payload, { headers: this.getHeaders() })
+      .subscribe({
+        next: (res) => {
+          if (res.success && res.user) {
+            // Mettre à jour le localStorage
+            const stored = localStorage.getItem('user');
+            if (stored) {
+              const u = JSON.parse(stored);
+              Object.assign(u, res.user);
+              localStorage.setItem('user', JSON.stringify(u));
+            }
+            this.profile.username = res.user.username;
+            this.profile.email = res.user.email;
+            this.profile.phone = res.user.phone || '';
+          }
+          // Reset password fields
+          this.security.currentPassword = '';
+          this.security.newPassword = '';
+          this.security.confirmPassword = '';
+          this.notificationService.success('Profil enregistré avec succès');
+        },
+        error: (err) => {
+          this.notificationService.error(err?.error?.message || 'Erreur lors de l\'enregistrement');
+        }
+      });
+  }
+  saveOrganization(): void {
+    const payload = {
+      name: this.organization.name,
+      address: this.organization.address,
+      contact_email: this.profile.email,
+      contact_phone: this.profile.phone,
+    };
+    this.http.put<any>(`${this.apiUrl}/organizations`, payload, { headers: this.getHeaders() })
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.storeService.setOrgName(res.data?.name || this.organization.name);
+            this.notificationService.success('Organisation mise à jour');
+          }
+        },
+        error: (err) => {
+          this.notificationService.error(err?.error?.message || 'Erreur lors de la mise à jour');
+        }
+      });
+  }
   saveNotifications(): void { this.notificationService.success('Notifications enregistrées'); }
   savePreferences(): void   { this.notificationService.success('Préférences enregistrées'); }
 
@@ -105,10 +219,36 @@ export class SettingsComponent implements OnInit {
       this.notificationService.error('Les mots de passe ne correspondent pas');
       return;
     }
-    this.notificationService.success('Mot de passe mis à jour');
-    this.security.currentPassword = '';
-    this.security.newPassword = '';
-    this.security.confirmPassword = '';
+    if (!this.security.currentPassword) {
+      this.notificationService.error('Veuillez saisir votre mot de passe actuel');
+      return;
+    }
+    if (this.security.newPassword.length < 6) {
+      this.notificationService.error('Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    const payload = {
+      currentPassword: this.security.currentPassword,
+      newPassword: this.security.newPassword,
+      username: this.profile.username,
+      email: this.profile.email,
+    };
+
+    this.http.put<any>(`${this.apiUrl}/auth/profile`, payload, { headers: this.getHeaders() })
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.notificationService.success('Mot de passe mis à jour');
+            this.security.currentPassword = '';
+            this.security.newPassword = '';
+            this.security.confirmPassword = '';
+          }
+        },
+        error: (err) => {
+          this.notificationService.error(err?.error?.message || 'Erreur lors de la mise à jour');
+        }
+      });
   }
 
   // ── Gestion des employés ───────────────────────────────────────────────────

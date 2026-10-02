@@ -6,7 +6,20 @@ import { catchError, map } from 'rxjs/operators';
 @Injectable({ providedIn: 'root' })
 export class ApiService {
 
-  private baseUrl = 'http://localhost:3000/api';
+  private baseUrl = ApiService.resolveBaseUrl();
+
+  /**
+   * URL de l'API :
+   * 1. meta[name="roogo-api-base"] si renseignée (déploiement proxifié)
+   * 2. même origine si servie sur le port 3000
+   * 3. sinon <même hôte>:3000 — marche en local et depuis un appareil LAN
+   */
+  private static resolveBaseUrl(): string {
+    const meta = document.querySelector('meta[name="roogo-api-base"]')?.getAttribute('content');
+    if (meta) return meta;
+    const { protocol, hostname, port, origin } = window.location;
+    return port === '3000' ? `${origin}/api` : `${protocol}//${hostname}:3000/api`;
+  }
 
   constructor(private http: HttpClient) {}
 
@@ -89,13 +102,19 @@ export class ApiService {
   }
   createClient(c: any): Observable<any>             { return this.post<any>('clients', c); }
   updateClient(id: number, c: any): Observable<any> { return this.put<any>(`clients/${id}`, c); }
+
+  // ── SUPPLIERS ─────────────────────────────────────────────────────────────
+  getSuppliers(): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('suppliers')).pipe(catchError(() => of([])));
+  }
   deleteClient(id: number): Observable<any>          { return this.del<any>(`clients/${id}`); }
 
   // ── SALES / VENTES ─────────────────────────────────────────────────────────
-  getSales(): Observable<any[]> {
-    return this.unwrap<any[]>(this.get<any>('sales')).pipe(catchError(() => of([])));
+  getSales(storeId?: number): Observable<any[]> {
+    const params = storeId ? `?store_id=${storeId}` : '';
+    return this.unwrap<any[]>(this.get<any>('sales' + params)).pipe(catchError(() => of([])));
   }
-  getVentes(): Observable<any[]>  { return this.getSales(); }
+  getVentes(storeId?: number): Observable<any[]>  { return this.getSales(storeId); }
 
   getSale(id: number): Observable<any>  { return this.unwrap<any>(this.get<any>(`sales/${id}`)); }
   getVente(id: number): Observable<any> { return this.getSale(id); }
@@ -105,6 +124,27 @@ export class ApiService {
 
   updateVente(id: number, v: any): Observable<any>   { return this.put<any>(`sales/${id}`, v); }
   deleteVente(id: number): Observable<any>            { return this.del<any>(`sales/${id}`); }
+
+  // ── ORDERINGS / COMMANDES ──────────────────────────────────────────────────
+  getOrderings(storeId?: number): Observable<any[]> {
+    const params = storeId ? `?store_id=${storeId}` : '';
+    return this.unwrap<any[]>(this.get<any>('orderings' + params)).pipe(catchError(() => of([])));
+  }
+  getOrdering(id: number): Observable<any> {
+    return this.unwrap<any>(this.get<any>(`orderings/${id}`)).pipe(catchError(() => of(null)));
+  }
+  createOrdering(ordering: any): Observable<any> {
+    return this.post<any>('orderings', ordering);
+  }
+  updateOrdering(id: number, data: any): Observable<any> {
+    return this.put<any>(`orderings/${id}`, data);
+  }
+  deleteOrdering(id: number): Observable<any> {
+    return this.del<any>(`orderings/${id}`);
+  }
+  receiveOrdering(id: number): Observable<any> {
+    return this.put<any>(`orderings/${id}/receive`, {});
+  }
 
   // ── ADMIN ─────────────────────────────────────────────────────────────────
   generateAIReport(): Observable<any> {
@@ -117,6 +157,115 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/admin/export/pdf`, params, { responseType: 'blob' });
   }
 
+  // ── AI (Sprint 6) ─────────────────────────────────────────────────────────
+  aiChat(message: string): Observable<any> {
+    return this.post<any>('ai/chat', { message }).pipe(catchError(() => of(null)));
+  }
+  aiRecommendations(): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('ai/recommendations')).pipe(catchError(() => of([])));
+  }
+  aiAnomalies(): Observable<any> {
+    return this.get<any>('ai/anomalies').pipe(catchError(() => of({ count: 0, critical: 0, warnings: 0, data: [] })));
+  }
+  aiForecasts(articleId?: number): Observable<any> {
+    return this.get<any>('ai/forecasts', articleId ? { article_id: articleId } : {}).pipe(catchError(() => of(null)));
+  }
+  aiResolved(category: 'recommendation' | 'anomaly'): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('ai/resolved', { category })).pipe(catchError(() => of([])));
+  }
+  aiResolve(payload: { category: string; item_key: string; title: string; entity_type?: string; entity_id?: number | null }): Observable<any> {
+    return this.post<any>('ai/resolve', payload);
+  }
+  aiUnresolve(category: string, item_key: string): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/ai/resolve`, { body: { category, item_key } });
+  }
+
+  // ── STORE MANAGEMENT (Sprint 7) ──────────────────────────────────────────
+  getStores(): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('stores')).pipe(catchError(() => of([])));
+  }
+  createStore(data: any): Observable<any> {
+    return this.post<any>('stores', data);
+  }
+  updateStore(id: number, data: any): Observable<any> {
+    return this.put<any>(`stores/${id}`, data);
+  }
+  deleteStore(id: number): Observable<any> {
+    return this.del<any>(`stores/${id}`);
+  }
+  createStoreTransfer(data: any): Observable<any> {
+    return this.post<any>('stores-management/transfers', data);
+  }
+  getStoreTransfers(): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('stores-management/transfers')).pipe(catchError(() => of([])));
+  }
+  getStoreComparison(): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('stores-management/comparison')).pipe(catchError(() => of([])));
+  }
+  getOutOfStockByStore(): Observable<any[]> {
+    return this.unwrap<any[]>(this.get<any>('stores-management/out-of-stock')).pipe(catchError(() => of([])));
+  }
+  createApprovalRequest(data: any): Observable<any> {
+    return this.post<any>('stores-management/approval', data);
+  }
+  approveRequest(auditLogId: number, approved: boolean, notes?: string): Observable<any> {
+    return this.put<any>(`stores-management/approval/${auditLogId}`, { approved, notes });
+  }
+  getPendingApprovals(): Observable<any[]> {
+    return this.get<any[]>('stores-management/approvals/pending').pipe(catchError(() => of([])));
+  }
+
+  // ── PAYMENTS (Sprint 8) ──────────────────────────────────────────────────
+  getExchangeRates(): Observable<any> {
+    return this.get<any>('payments/rates').pipe(catchError(() => of(null)));
+  }
+  convertCurrency(amount: number, from: string, to: string): Observable<any> {
+    return this.post<any>('payments/convert', { amount, from, to }).pipe(catchError(() => of(null)));
+  }
+  initiatePayment(data: any): Observable<any> {
+    return this.post<any>('payments/pay', data);
+  }
+  checkPaymentStatus(reference: string): Observable<any> {
+    return this.get<any>(`payments/status/${reference}`).pipe(catchError(() => of(null)));
+  }
+  getPaymentHistory(): Observable<any[]> {
+    return this.get<any[]>('payments/history').pipe(catchError(() => of([])));
+  }
+
+  // ── FINANCE (Sprint 9) ───────────────────────────────────────────────────
+  getFIFOValuation(): Observable<any> {
+    return this.get<any>('finance/fifo').pipe(catchError(() => of(null)));
+  }
+  getWeightedAvgValuation(): Observable<any> {
+    return this.get<any>('finance/weighted-avg').pipe(catchError(() => of(null)));
+  }
+  getHoldingCost(params?: any): Observable<any> {
+    return this.get<any>('finance/holding-cost', params).pipe(catchError(() => of(null)));
+  }
+  simulateScenario(scenario: string, params?: any): Observable<any> {
+    return this.post<any>('finance/simulate', { scenario, params: params || {} }).pipe(catchError(() => of(null)));
+  }
+  getFinancialSummary(): Observable<any> {
+    return this.get<any>('finance/summary').pipe(catchError(() => of(null)));
+  }
+
+  // ── MARKETPLACE (Sprint 10) ──────────────────────────────────────────────
+  getMarketplaceListings(params?: any): Observable<any[]> {
+    return this.get<any[]>('marketplace/listings', params).pipe(catchError(() => of([])));
+  }
+  placeMarketplaceOrder(data: any): Observable<any> {
+    return this.post<any>('marketplace/order', data);
+  }
+  getEcommerceSync(): Observable<any> {
+    return this.get<any>('marketplace/ecommerce/sync').pipe(catchError(() => of({ count: 0, products: [] })));
+  }
+  sendStockAlert(data: any): Observable<any> {
+    return this.post<any>('marketplace/alerts/send', data);
+  }
+  runAutoAlerts(): Observable<any> {
+    return this.post<any>('marketplace/alerts/run', {}).pipe(catchError(() => of({ count: 0, alerts: [] })));
+  }
+
   // ── Mappers Backend ↔ Frontend ─────────────────────────────────────────────
   private fromApi(a: any): any {
     if (!a) return a;
@@ -125,8 +274,8 @@ export class ApiService {
       nom:              a.name_article  ?? a.nom        ?? '',
       categorie:        a.categorie     ?? '',
       description:      a.description   ?? '',
-      prix:             a.unit_price    ?? a.prix       ?? 0,
-      stock:            a.quantity      ?? a.stock      ?? 0,
+      prix:             Number(a.unit_price ?? a.prix ?? 0),
+      stock:            Number(a.quantity   ?? a.stock ?? 0),
       date_manufacture: a.date_manufacture ?? null,
       expiration_date:  a.expiration_date  ?? null,
     };
@@ -136,8 +285,9 @@ export class ApiService {
     return {
       name_article:     a.nom           ?? a.name_article ?? '',
       categorie:        a.categorie     ?? '',
-      quantity:         a.stock         ?? a.quantity     ?? 0,
-      unit_price:       a.prix          ?? a.unit_price   ?? 0,
+      description:      a.description   ?? '',
+      quantity:         Number(a.stock  ?? a.quantity     ?? 0),
+      unit_price:       Number(a.prix   ?? a.unit_price   ?? 0),
       date_manufacture: a.date_manufacture ?? null,
       expiration_date:  a.expiration_date  ?? null,
     };

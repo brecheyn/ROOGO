@@ -1,0 +1,326 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <div class="header-eyebrow">Multi-Magasin</div>
+      <h1>Gestion des Magasins</h1>
+      <div class="header-meta">
+        <div class="status-dot"></div>
+        <span>Comparaison, transferts et approbations</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="loadAll()" [disabled]="isLoading()">
+        <mat-icon [class.rotating]="isLoading()">refresh</mat-icon>
+        Actualiser
+      </button>
+      <button class="primary-btn" (click)="showNewStore = true">
+        <mat-icon>add</mat-icon> Nouveau magasin
+      </button>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="custom-tabs">
+    <!-- Comparison -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">store</mat-icon>
+        <span class="tab-label">Comparaison</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="loading-grid" *ngIf="isLoading()">
+          <div class="skeleton-card" *ngFor="let i of [1,2]"></div>
+        </div>
+
+        <div class="empty-state" *ngIf="!isLoading() && comparison().length === 0">
+          <mat-icon>store</mat-icon>
+          <h3>Aucun magasin</h3>
+          <p>Configurez vos magasins pour comparer leurs performances.</p>
+          <div class="example-hint">
+            <mat-icon>info</mat-icon>
+            <span>Exemple : Magasin Principal, Entrepôt, Point de vente</span>
+          </div>
+        </div>
+
+        <div class="store-grid" *ngIf="!isLoading() && comparison().length > 0">
+          <div class="store-card" *ngFor="let store of comparison(); let i = index" [style.animation-delay]="i * 0.1 + 's'">
+            <div class="store-header">
+              <div class="store-icon-wrap">
+                <mat-icon>store</mat-icon>
+              </div>
+              <div class="store-info">
+                <div class="store-name">{{ store.store_name }}</div>
+                <div class="store-meta">{{ store.adresse || 'Adresse non renseignée' }}</div>
+              </div>
+              <div class="store-actions">
+                <button class="icon-btn edit" (click)="openEdit(store)" matTooltip="Modifier">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button class="icon-btn delete" (click)="confirmDelete(store)" matTooltip="Supprimer">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+            <div class="store-stats">
+              <div class="store-stat">
+                <span class="stat-val">{{ store.total_sales || 0 }}</span>
+                <span class="stat-lbl">Ventes totales</span>
+              </div>
+              <div class="store-stat">
+                <span class="stat-val">{{ store.total_revenue || 0 | number:'1.0-0' }}</span>
+                <span class="stat-lbl">CA total (F)</span>
+              </div>
+              <div class="store-stat">
+                <span class="stat-val">{{ store.unique_clients || 0 }}</span>
+                <span class="stat-lbl">Clients</span>
+              </div>
+            </div>
+            <div class="store-stats" style="margin-top: 10px">
+              <div class="store-stat">
+                <span class="stat-val">{{ store.monthly_sales || 0 }}</span>
+                <span class="stat-lbl">Ventes ce mois</span>
+              </div>
+              <div class="store-stat">
+                <span class="stat-val">{{ store.monthly_revenue || 0 | number:'1.0-0' }}</span>
+                <span class="stat-lbl">CA mois (F)</span>
+              </div>
+              <div class="store-stat">
+                <span class="stat-val">{{ store.total_orders || 0 }}</span>
+                <span class="stat-lbl">Commandes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Transfers -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">swap_horiz</mat-icon>
+        <span class="tab-label">Transferts</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Nouveau Transfert</div>
+            <div class="card-hint">Déplacer du stock entre magasins</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Magasin source</label>
+                <select [(ngModel)]="transferForm.from_store_id" class="form-select">
+                  <option value="">-- Sélectionner --</option>
+                  <option *ngFor="let s of comparison()" [value]="s.store_id">{{ s.store_name }}</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Magasin destination</label>
+                <select [(ngModel)]="transferForm.to_store_id" class="form-select">
+                  <option value="">-- Sélectionner --</option>
+                  <option *ngFor="let s of comparison()" [value]="s.store_id">{{ s.store_name }}</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Article</label>
+                <select [(ngModel)]="transferForm.article_id" class="form-select">
+                  <option value="">-- Sélectionner --</option>
+                  <option *ngFor="let a of articles()" [value]="a.id">{{ a.nom || a.name_article }} ({{ a.stock || a.quantity }} dispo)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Quantité</label>
+                <input type="number" [(ngModel)]="transferForm.quantity" min="1" class="form-input" placeholder="0">
+              </div>
+            </div>
+            <div class="form-field full-width">
+              <label>Notes (optionnel)</label>
+              <textarea [(ngModel)]="transferForm.notes" rows="2" class="form-textarea" placeholder="Raison du transfert..."></textarea>
+            </div>
+            <button class="primary-btn" (click)="submitTransfer()">
+              <mat-icon>send</mat-icon> Effectuer le transfert
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px">
+          <div class="card-header"><div class="card-title">Historique des Transferts</div></div>
+          <div class="card-body">
+            <div class="empty-state small" *ngIf="transfers().length === 0">
+              <mat-icon>swap_horiz</mat-icon>
+              <p>Aucun transfert enregistré</p>
+              <small>Les transferts apparaîtront ici après création.</small>
+            </div>
+            <div class="transfer-item" *ngFor="let t of transfers()">
+              <div class="transfer-icon"><mat-icon>swap_horiz</mat-icon></div>
+              <div class="transfer-info">
+                <span class="transfer-title">{{ t.name_article }} — {{ t.quantity }} unités</span>
+                <span class="transfer-meta">De {{ t.from_store_name }} → {{ t.to_store_name }}</span>
+                <span class="transfer-date">{{ t.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Approvals -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">check_circle</mat-icon>
+        <span class="tab-label">Approbations</span>
+      </ng-template>
+      <div class="tab-content">
+        <div class="empty-state" *ngIf="approvals().length === 0">
+          <div class="empty-icon success">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <h3>Aucune demande en attente</h3>
+          <p>Les demandes d'approbation de commandes apparaîtront ici.</p>
+          <div class="example-hint">
+            <mat-icon>info</mat-icon>
+            <span>Les commandes > 500 000 FCFA nécessitent une validation directeur</span>
+          </div>
+        </div>
+        <div class="approval-list" *ngIf="approvals().length > 0">
+          <div class="approval-item" *ngFor="let a of approvals()">
+            <div class="approval-icon"><mat-icon>shopping_cart</mat-icon></div>
+            <div class="approval-info">
+              <div class="approval-title">Commande #{{ a.entity_id }}</div>
+              <div class="approval-meta">Demandé par {{ a.username }} • {{ a.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
+            </div>
+            <div class="approval-actions">
+              <button class="btn-approve" (click)="approve(a.id, true)"><mat-icon>check</mat-icon> Approuver</button>
+              <button class="btn-reject" (click)="approve(a.id, false)"><mat-icon>close</mat-icon> Rejeter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<!-- MODAL NOUVEAU MAGASIN -->
+<div class="modal-overlay" *ngIf="showNewStore" (click)="showNewStore = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon-wrap"><mat-icon>store</mat-icon></div>
+      <div>
+        <h2>Nouveau magasin</h2>
+      </div>
+      <button class="modal-close" (click)="showNewStore = false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Nom du magasin <span class="required">*</span></label>
+        <div class="input-wrap">
+          <mat-icon>store</mat-icon>
+          <input type="text" [(ngModel)]="newStore.name" placeholder="Ex: Magasin Centre-Ville" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Adresse</label>
+        <div class="input-wrap">
+          <mat-icon>location_on</mat-icon>
+          <input type="text" [(ngModel)]="newStore.adresse" placeholder="Ex: Abidjan, Plateau" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Téléphone</label>
+        <div class="input-wrap">
+          <mat-icon>phone</mat-icon>
+          <input type="text" [(ngModel)]="newStore.phone" placeholder="Ex: +225 27 20 00 00" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Email</label>
+        <div class="input-wrap">
+          <mat-icon>email</mat-icon>
+          <input type="text" [(ngModel)]="newStore.email_adresse" placeholder="Ex: magasin@roogo.com" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="showNewStore = false">Annuler</button>
+      <button class="action-btn submit" (click)="createStore()" [disabled]="!newStore.name || creatingStore">
+        <span class="btn-spinner" *ngIf="creatingStore"></span>
+        <mat-icon *ngIf="!creatingStore">add</mat-icon>
+        {{ creatingStore ? 'Création...' : 'Créer le magasin' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MODIFIER MAGASIN -->
+<div class="modal-overlay" *ngIf="showEditStore" (click)="showEditStore = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-icon-wrap"><mat-icon>edit</mat-icon></div>
+      <div>
+        <h2>Modifier le magasin</h2>
+      </div>
+      <button class="modal-close" (click)="showEditStore = false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Nom du magasin <span class="required">*</span></label>
+        <div class="input-wrap">
+          <mat-icon>store</mat-icon>
+          <input type="text" [(ngModel)]="editStore.name" placeholder="Nom du magasin" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Adresse</label>
+        <div class="input-wrap">
+          <mat-icon>location_on</mat-icon>
+          <input type="text" [(ngModel)]="editStore.adresse" placeholder="Adresse" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Téléphone</label>
+        <div class="input-wrap">
+          <mat-icon>phone</mat-icon>
+          <input type="text" [(ngModel)]="editStore.phone" placeholder="Téléphone" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Email</label>
+        <div class="input-wrap">
+          <mat-icon>email</mat-icon>
+          <input type="text" [(ngModel)]="editStore.email_adresse" placeholder="Email" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="showEditStore = false">Annuler</button>
+      <button class="action-btn submit" (click)="updateStore()" [disabled]="!editStore.name || savingStore">
+        <span class="btn-spinner" *ngIf="savingStore"></span>
+        <mat-icon *ngIf="!savingStore">save</mat-icon>
+        {{ savingStore ? 'Enregistrement...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMER SUPPRESSION -->
+<div class="modal-overlay" *ngIf="storeToDelete" (click)="cancelDelete()">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header delete-header">
+      <div class="delete-icon-wrap"><mat-icon>delete_forever</mat-icon></div>
+      <div>
+        <h2>Supprimer le magasin</h2>
+        <div class="modal-sub">{{ storeToDelete?.store_name }}</div>
+      </div>
+      <button class="modal-close" (click)="cancelDelete()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body">
+      <p class="delete-warning">Cette action est irréversible.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="cancelDelete()">Annuler</button>
+      <button class="action-btn danger-btn" (click)="confirmDeleteAction()">
+        <mat-icon>delete</mat-icon> Supprimer
+      </button>
+    </div>
+  </div>
+</div>

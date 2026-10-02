@@ -1,0 +1,55 @@
+<!-- Floating Chat Button -->
+<button class="chat-fab" (click)="toggle()" [class.open]="isOpen()">
+  <mat-icon>{{ isOpen() ? 'close' : 'smart_toy' }}</mat-icon>
+</button>
+
+<!-- Chat Panel -->
+<div class="chat-panel" [class.open]="isOpen()">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <mat-icon class="chat-header-icon">smart_toy</mat-icon>
+      <div>
+        <div class="chat-header-title">Assistant IA</div>
+        <div class="chat-header-status">ROOGO Bot</div>
+      </div>
+    </div>
+    <button mat-icon-button class="chat-close" (click)="toggle()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" #scrollContainer>
+    <div *ngFor="let msg of messages()"
+         class="chat-msg"
+         [class.user]="msg.role === 'user'"
+         [class.bot]="msg.role === 'bot'">
+      <div class="msg-bubble">
+        <div class="msg-text" [innerHTML]="msg.text | chatFormat"></div>
+        <div class="msg-time">{{ formatTime(msg.timestamp) }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading()" class="chat-msg bot">
+      <div class="msg-bubble typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="chat-input">
+    <input
+      type="text"
+      [ngModel]="userInput()"
+      (ngModelChange)="userInput.set($event)"
+      (keydown)="onKeydown($event)"
+      placeholder="Tapez votre message..."
+      [disabled]="isLoading()"
+    />
+    <button mat-icon-button class="send-btn" (click)="sendMessage()" [disabled]="isLoading() || !userInput().trim()">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+</div>

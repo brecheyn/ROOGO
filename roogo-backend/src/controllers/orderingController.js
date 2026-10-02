@@ -11,11 +11,7 @@ exports.getAllOrderings = async (req, res) => {
       ORDER BY o.order_date DESC
     `);
 
-    res.json({
-      success: true,
-      count: result.rows.length,
-      data: result.rows
-    });
+    res.json(result.rows);
   } catch (error) {
     console.error('Erreur:', error);
     res.status(500).json({
@@ -82,7 +78,44 @@ exports.createOrdering = async (req, res) => {
   }
 };
 
-// Marquer une commande comme reçue
+// Modifier une commande
+exports.updateOrdering = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { id_article, id_supplier, quantity, price } = req.body;
+
+    const existing = await pool.query('SELECT * FROM ordering WHERE id = $1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Commande non trouvée' });
+    }
+
+    const result = await pool.query(
+      `UPDATE ordering SET id_article = $1, id_supplier = $2, quantity = $3, price = $4 WHERE id = $5 RETURNING *`,
+      [id_article, id_supplier, quantity, price, id]
+    );
+    res.json({ success: true, message: 'Commande modifiée', data: result.rows[0] });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
+
+// Supprimer une commande
+exports.deleteOrdering = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await pool.query('SELECT * FROM ordering WHERE id = $1', [id]);
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Commande non trouvée' });
+    }
+
+    await pool.query('DELETE FROM ordering WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Commande supprimée' });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+};
 exports.receiveOrdering = async (req, res) => {
   const client = await pool.connect();
 

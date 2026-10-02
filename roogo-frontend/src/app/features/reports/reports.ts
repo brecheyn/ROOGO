@@ -22,6 +22,9 @@ export class ReportsComponent implements OnInit {
   errorMsg = '';
   successMsg = '';
 
+  reportToDelete: any = null;
+  showDeleteModal = false;
+
   private apiUrl = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient) {}
@@ -38,7 +41,7 @@ export class ReportsComponent implements OnInit {
   // ── Charger tous les rapports ──────────────────────────────────────────────
   loadReports(): void {
     this.loadingReports = true;
-    this.http.get<any>(`${this.apiUrl}/reports`, { headers: this.getHeaders() })
+    this.http.get<any>(`${this.apiUrl}/rapports`, { headers: this.getHeaders() })
       .subscribe({
         next: (res) => {
           this.reports = res.data || [];
@@ -55,7 +58,7 @@ export class ReportsComponent implements OnInit {
     this.errorMsg = '';
     this.successMsg = '';
 
-    this.http.post<any>(`${this.apiUrl}/reports/generate`, {}, { headers: this.getHeaders() })
+    this.http.post<any>(`${this.apiUrl}/rapports/generate`, {}, { headers: this.getHeaders() })
       .subscribe({
         next: (res) => {
           this.aiReport = res.data;
@@ -81,13 +84,25 @@ export class ReportsComponent implements OnInit {
   }
 
   // ── Supprimer un rapport ───────────────────────────────────────────────────
-  deleteReport(id: number): void {
-    if (!confirm('Supprimer ce rapport ?')) return;
-    this.http.delete(`${this.apiUrl}/reports/${id}`, { headers: this.getHeaders() })
+  confirmDelete(report: any): void {
+    this.reportToDelete = report;
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete(): void {
+    this.reportToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  confirmDeleteAction(): void {
+    if (!this.reportToDelete) return;
+    const id = this.reportToDelete.id;
+    this.http.delete(`${this.apiUrl}/rapports/${id}`, { headers: this.getHeaders() })
       .subscribe({
         next: () => {
           this.reports = this.reports.filter(r => r.id !== id);
           if (this.selectedReport?.id === id) this.selectedReport = null;
+          this.cancelDelete();
         },
         error: (err) => console.error('Erreur suppression:', err)
       });

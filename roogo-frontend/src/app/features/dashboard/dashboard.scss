@@ -74,6 +74,17 @@ $radius:            20px;
     line-height: 1;
     letter-spacing: -1px;
     margin: 0;
+
+    .store-badge {
+      font-size: 0.55em;
+      font-weight: 600;
+      color: $gold;
+      background: $gold-light;
+      padding: 4px 14px;
+      border-radius: 20px;
+      vertical-align: middle;
+      letter-spacing: 0;
+    }
   }
 
   .header-meta {

@@ -44,15 +44,26 @@
       </div>
       <div class="card-body">
         <div class="avatar-section">
-          <div class="avatar-xl">{{ getUserInitials() }}</div>
+          <div class="avatar-wrap">
+            <div class="avatar-xl" *ngIf="!profilePhoto">{{ getUserInitials() }}</div>
+            <img *ngIf="profilePhoto" [src]="profilePhoto" class="avatar-xl avatar-img" alt="Photo de profil" />
+            <button *ngIf="profilePhoto" class="view-photo-btn" (click)="showPhotoViewer = true" matTooltip="Voir la photo">
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </div>
           <div>
             <div class="avatar-name">{{ profile.username }}</div>
             <div class="avatar-role">{{ profile.role }}</div>
-            <label class="upload-btn">
-              <mat-icon>photo_camera</mat-icon>
-              Changer la photo
-              <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
-            </label>
+            <div class="upload-row">
+              <label class="upload-btn">
+                <mat-icon>photo_camera</mat-icon>
+                {{ profilePhoto ? 'Changer la photo' : 'Ajouter une photo' }}
+                <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+              </label>
+              <button *ngIf="profilePhoto" class="upload-btn remove" (click)="removePhoto()">
+                <mat-icon>delete</mat-icon> Supprimer
+              </button>
+            </div>
           </div>
         </div>
 
@@ -108,21 +119,30 @@
             <label>Mot de passe actuel</label>
             <div class="input-wrap">
               <mat-icon class="input-icon">lock</mat-icon>
-              <input type="password" [(ngModel)]="security.currentPassword" placeholder="••••••••" />
+              <input [type]="showCurrentPw ? 'text' : 'password'" [(ngModel)]="security.currentPassword" placeholder="••••••••" />
+              <button type="button" class="pw-toggle" (click)="showCurrentPw = !showCurrentPw">
+                <mat-icon>{{ showCurrentPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             </div>
           </div>
           <div class="form-group">
             <label>Nouveau mot de passe</label>
             <div class="input-wrap">
               <mat-icon class="input-icon">lock_open</mat-icon>
-              <input type="password" [(ngModel)]="security.newPassword" placeholder="••••••••" />
+              <input [type]="showNewPw ? 'text' : 'password'" [(ngModel)]="security.newPassword" placeholder="••••••••" />
+              <button type="button" class="pw-toggle" (click)="showNewPw = !showNewPw">
+                <mat-icon>{{ showNewPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             </div>
           </div>
           <div class="form-group">
             <label>Confirmer le mot de passe</label>
             <div class="input-wrap">
               <mat-icon class="input-icon">lock_open</mat-icon>
-              <input type="password" [(ngModel)]="security.confirmPassword" placeholder="••••••••" />
+              <input [type]="showConfirmPw ? 'text' : 'password'" [(ngModel)]="security.confirmPassword" placeholder="••••••••" />
+              <button type="button" class="pw-toggle" (click)="showConfirmPw = !showConfirmPw">
+                <mat-icon>{{ showConfirmPw ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
             </div>
           </div>
         </div>
@@ -420,4 +440,23 @@
 
   </div>
 
+</div>
+
+<!-- MODAL VOIR LA PHOTO -->
+<div class="modal-overlay" *ngIf="showPhotoViewer && profilePhoto" (click)="showPhotoViewer = false">
+  <div class="modal modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <div class="header-eyebrow">Photo de profil</div>
+        <h2>{{ profile.username }}</h2>
+      </div>
+      <button class="modal-close" (click)="showPhotoViewer = false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="modal-body photo-viewer-body">
+      <img [src]="profilePhoto" alt="Photo de profil" class="photo-viewer-img" />
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn" (click)="showPhotoViewer = false">Fermer</button>
+    </div>
+  </div>
 </div>

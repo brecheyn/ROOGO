@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -49,22 +49,38 @@ export class SaleFormComponent implements OnInit {
   currentDate = new Date();
   displayedColumns: string[] = ['nom', 'quantite', 'prixUnitaire', 'sousTotal', 'actions'];
 
+  isEditMode = false;
+  editSaleId: number | null = null;
+
   constructor(
     private apiService: ApiService,
     private notificationService: NotificationService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    // afterNextRender runs only in browser, not during SSR
+    afterNextRender(() => {
+      this.loadClients();
+      this.loadArticles();
+
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) {
+        this.isEditMode = true;
+        this.editSaleId = +id;
+        this.loadSaleForEdit(this.editSaleId);
+      }
+    });
+  }
 
   ngOnInit(): void {
-    this.loadClients();
-    this.loadArticles();
+    // Empty - everything runs in afterNextRender
   }
 
   loadClients(): void {
     this.apiService.getClients().subscribe({
       next: (data) => {
         this.clients = data.map((c: any) => ({
-          label: `${c.prenom} ${c.nom}`,
+          label: `${c.name || c.prenom || ''} ${c.surname || c.nom || ''}`.trim() || `Client #${c.id}`,
           value: c.id,
           ...c,
         }));
@@ -81,6 +97,35 @@ export class SaleFormComponent implements OnInit {
           ...a,
         }));
       },
+    });
+  }
+
+  loadSaleForEdit(id: number): void {
+    this.apiService.getSale(id).subscribe({
+      next: (sale: any) => {
+        console.log('Sale loaded for edit:', sale);
+        this.currentDate = new Date(sale.date_sate || sale.dateVente || sale.created_at);
+        this.selectedClient = this.clients.find(c => c.value === sale.id_client) || null;
+        if (!this.selectedClient && sale.id_client) {
+          console.warn('Client not found in loaded list:', sale.id_client);
+        }
+        
+        this.saleLines = (sale.articles || []).map((a: any) => {
+          const qty = a.quantity || a.quantite || 1;
+          const total = parseFloat(a.price) || 0;
+          return {
+            articleId: a.id_article || a.articleId,
+            articleNom: a.name_article || a.articleNom,
+            quantite: qty,
+            prixUnitaire: total / qty,
+            sousTotal: total,
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Error loading sale for edit:', err);
+        this.notificationService.error('Erreur chargement vente: ' + (err.error?.message || err.message || 'Erreur'));
+      }
     });
   }
 
@@ -150,23 +195,19 @@ export class SaleFormComponent implements OnInit {
       articles: this.saleLines,
     };
 
-    this.apiService.createVente(sale).subscribe({
+    const request = this.isEditMode && this.editSaleId
+      ? this.apiService.updateVente(this.editSaleId, sale)
+      : this.apiService.createVente(sale);
+
+    request.subscribe({
       next: (response) => {
-        this.notificationService.success('Vente enregistrée avec succès');
-        this.generatePDF(response);
+        this.notificationService.success(this.isEditMode ? 'Vente modifiée avec succès' : 'Vente enregistrée avec succès');
         this.router.navigate(['/sales']);
       },
       error: () => {
-        this.notificationService.error("Erreur lors de l'enregistrement");
+        this.notificationService.error(this.isEditMode ? "Erreur lors de la modification" : "Erreur lors de l'enregistrement");
       },
     });
-  }
-
-  generatePDF(sale: any): void {
-    this.notificationService.info('Génération de la facture PDF...');
-    setTimeout(() => {
-      this.notificationService.success('Facture PDF générée');
-    }, 2000);
   }
 
   cancel(): void {

@@ -12,8 +12,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
-import { AuthService } from '/home/phares/Desktop/project/roogo/roogo-frontend/src/app/core/services/auth.service';
-import { AssetsService } from '/home/phares/Desktop/project/roogo/roogo-frontend/src/app/core/services/assets.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { AssetsService } from '../../../core/services/assets.service';
+import { StoreService } from '../../../core/services/store.service';
+import { ChatbotComponent } from '../chatbot/chatbot';
+import { ToastService } from '../../../core/services/toast.service';
 
 interface MenuItem {
   icon:       string;
@@ -45,39 +48,45 @@ interface StockAlert {
     MatMenuModule,
     MatDividerModule,
     MatTooltipModule,
+    ChatbotComponent,
   ],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.scss'],
 })
 export class SidebarComponent implements OnInit {
 
-  organizationName = '';
   userName         = '';
   userRole         = '';
   sidenavOpened    = true;
   notifications: StockAlert[] = [];
+  showLogoutConfirm = false;
 
   get notificationCount(): number {
     return this.notifications.length;
   }
 
   menuItems: MenuItem[] = [
-    { icon: 'dashboard',            label: 'Tableau de bord', route: '/dashboard' },
-    { icon: 'inventory_2',          label: 'Articles',        route: '/articles' },
-    { icon: 'groups',               label: 'Clients',         route: '/clients' },
-    { icon: 'local_shipping',       label: 'Fournisseurs',    route: '/suppliers' },
-    { icon: 'point_of_sale',        label: 'Ventes',          route: '/sales' },
-    { icon: 'shopping_basket',      label: 'Commandes',       route: '/orderings' },
-    { icon: 'assessment',           label: 'Rapports',        route: '/reports' },
-    { icon: 'admin_panel_settings', label: 'Administration',  route: '/admin', ownerOnly: true },
-    { icon: 'settings',             label: 'Paramètres',      route: '/settings' },
+    { icon: 'dashboard',            label: 'Tableau de bord',   route: '/dashboard' },
+    { icon: 'inventory_2',          label: 'Articles',          route: '/articles' },
+    { icon: 'groups',               label: 'Clients',           route: '/clients' },
+    { icon: 'local_shipping',       label: 'Fournisseurs',      route: '/suppliers' },
+    { icon: 'point_of_sale',        label: 'Ventes',            route: '/sales' },
+    { icon: 'shopping_basket',      label: 'Commandes',         route: '/orderings' },
+    { icon: 'store',                label: 'Magasins',          route: '/stores' },
+    { icon: 'account_balance',      label: 'Finance',           route: '/finance' },
+    { icon: 'smart_toy',            label: 'Recommandations',   route: '/intelligence/recommendations' },
+    { icon: 'assessment',           label: 'Rapports',          route: '/reports' },
+    { icon: 'admin_panel_settings', label: 'Administration',    route: '/admin', ownerOnly: true },
+    { icon: 'settings',             label: 'Paramètres',        route: '/settings' },
   ];
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private http: HttpClient,
-    public assets: AssetsService   // public pour accès dans le template
+    public assets: AssetsService,
+    public storeService: StoreService,
+    private toast: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -88,9 +97,8 @@ export class SidebarComponent implements OnInit {
   loadUserInfo(): void {
     const user = this.authService.getCurrentUser();
     if (user) {
-      this.organizationName = (user as any).organizationName || '';
-      this.userName         = user.username || 'Utilisateur';
-      this.userRole         = this.getRoleLabel((user as any).role || '');
+      this.userName = user.username || 'Utilisateur';
+      this.userRole = this.getRoleLabel((user as any).role || '');
     }
   }
 
@@ -129,12 +137,22 @@ export class SidebarComponent implements OnInit {
     this.sidenavOpened = !this.sidenavOpened;
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    this.showLogoutConfirm = true;
+  }
+
+  confirmLogout(): void {
     this.authService.logout();
+    this.showLogoutConfirm = false;
+    this.toast.info('Vous avez été déconnecté.');
+  }
+
+  cancelLogout(): void {
+    this.showLogoutConfirm = false;
   }
 
   goToProfile(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/settings']);
   }
 
   goToSettings(): void {

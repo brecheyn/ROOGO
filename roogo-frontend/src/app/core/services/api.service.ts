@@ -10,15 +10,15 @@ export class ApiService {
 
   /**
    * URL de l'API :
-   * 1. meta[name="roogo-api-base"] si renseignée (déploiement proxifié)
-   * 2. même origine si servie sur le port 3000
-   * 3. sinon <même hôte>:3000 — marche en local et depuis un appareil LAN
+   * 1. meta[name="roogo-api-base"] si renseignée (déploiement avec API ailleurs)
+   * 2. sinon même origine "/api" — marche partout :
+   *    - ng serve : proxy.conf.json → localhost:3000
+   *    - backend : app servi par Express sur / → /api
+   *    - Vercel : rewrite /api → fonction serverless
    */
   private static resolveBaseUrl(): string {
     const meta = document.querySelector('meta[name="roogo-api-base"]')?.getAttribute('content');
-    if (meta) return meta;
-    const { protocol, hostname, port, origin } = window.location;
-    return port === '3000' ? `${origin}/api` : `${protocol}//${hostname}:3000/api`;
+    return meta || '/api';
   }
 
   constructor(private http: HttpClient) {}

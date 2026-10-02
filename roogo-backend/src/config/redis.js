@@ -3,7 +3,11 @@ const logger = require('./logger');
 
 let redis = null;
 
-try {
+// Sur Vercel/serverless sans REDIS_HOST : pas de Redis (cache désactivé, pas de retries)
+const skipRedis = !!process.env.VERCEL && !process.env.REDIS_HOST;
+
+if (!skipRedis) {
+  try {
   redis = new Redis({
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT) || 6379,
@@ -20,11 +24,12 @@ try {
   redis.on('error', (err) => logger.warn({ err: err.message }, 'Redis non disponible — cache désactivé'));
   redis.on('ready', () => logger.info('Redis prêt'));
 
-  redis.connect().catch(() => {
+    redis.connect().catch(() => {
     logger.warn('Redis non disponible — le cache sera désactivé');
   });
-} catch (err) {
-  logger.warn({ err: err.message }, 'Impossible de se connecter à Redis');
+  } catch (err) {
+    logger.warn({ err: err.message }, 'Impossible de se connecter à Redis');
+  }
 }
 
 // Helper: get avec JSON parse

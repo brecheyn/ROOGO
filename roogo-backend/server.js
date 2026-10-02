@@ -207,16 +207,13 @@ const shutdown = async (signal) => {
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("SIGINT", () => shutdown("SIGINT"));
 
-// ── Start (exécution locale uniquement) ──────────────────────────────────────
-// Sur Vercel, api/index.js importe cette app sans la démarrer (serverless).
-if (require.main === module) {
-  server.listen(PORT, () => {
-    logger.info({
-      port: PORT,
-      env: process.env.NODE_ENV || "development",
-      version: "4.0.0",
-    }, "API ROOGO démarrée avec succès");
-  });
-}
+// ── Start ─────────────────────────────────────────────────────────────────────
+server.listen(PORT, () => {
+  logger.info({
+    port: PORT,
+    env: process.env.NODE_ENV || "development",
+    version: "4.0.0",
+  }, "API ROOGO démarrée avec succès");
+});
 
 module.exports = { app, server, io };

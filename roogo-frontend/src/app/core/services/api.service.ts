@@ -2,24 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { resolveApiBase } from '../api-base';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
 
-  private baseUrl = ApiService.resolveBaseUrl();
-
-  /**
-   * URL de l'API :
-   * 1. meta[name="roogo-api-base"] si renseignée (déploiement proxifié)
-   * 2. même origine si servie sur le port 3000
-   * 3. sinon <même hôte>:3000 — marche en local et depuis un appareil LAN
-   */
-  private static resolveBaseUrl(): string {
-    const meta = document.querySelector('meta[name="roogo-api-base"]')?.getAttribute('content');
-    if (meta) return meta;
-    const { protocol, hostname, port, origin } = window.location;
-    return port === '3000' ? `${origin}/api` : `${protocol}//${hostname}:3000/api`;
-  }
+  // Règles de résolution centralisées dans core/api-base.ts
+  private baseUrl = resolveApiBase();
 
   constructor(private http: HttpClient) {}
 

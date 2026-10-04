@@ -6,6 +6,8 @@ import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { ToastService } from '../../../core/services/toast.service';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 @Component({
   selector: 'app-supplier-list',
   standalone: true,
@@ -21,7 +23,7 @@ export class SupplierListComponent implements OnInit {
   selectedSupplier: any = null;
   supplierToDelete: any = null;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(private http: HttpClient, private router: Router, private toast: ToastService) {}
 

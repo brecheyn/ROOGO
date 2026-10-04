@@ -5,6 +5,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 @Component({
   selector: 'app-ordering-form',
   standalone: true,
@@ -23,7 +25,7 @@ export class OrderingFormComponent implements OnInit {
   articles: any[] = [];
   suppliers: any[] = [];
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute) {}
 

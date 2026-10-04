@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 
+import { resolveApiBase } from '../../core/api-base';
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -25,7 +27,7 @@ export class ReportsComponent implements OnInit {
   reportToDelete: any = null;
   showDeleteModal = false;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(private http: HttpClient) {}
 

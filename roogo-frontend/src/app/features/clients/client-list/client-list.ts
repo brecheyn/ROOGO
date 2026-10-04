@@ -6,6 +6,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { ToastService } from '../../../core/services/toast.service';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 @Component({
   selector: 'app-client-list',
   standalone: true,
@@ -22,7 +24,7 @@ export class ClientListComponent implements OnInit {
   showDeleteModal = false;
   clientToDelete: any = null;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(private router: Router, private http: HttpClient, private toast: ToastService) {}
 

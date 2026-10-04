@@ -13,6 +13,8 @@ import { switchMap, catchError } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { StoreService } from '../../core/services/store.service';
 
+import { resolveApiBase } from '../../core/api-base';
+
 interface DashboardStats {
   chiffreAffairesMois: number;
   chiffreAffairesTrend: number;
@@ -64,7 +66,7 @@ interface RecentSale {
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
-  private API = 'http://localhost:3000/api/dashboard';
+  private API = resolveApiBase() + '/dashboard';
   private isBrowser: boolean;
 
   stats: DashboardStats = this.emptyStats();

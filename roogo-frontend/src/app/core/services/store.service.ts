@@ -1,13 +1,15 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
+import { resolveApiBase } from '../api-base';
+
 @Injectable({ providedIn: 'root' })
 export class StoreService {
   private stores = signal<any[]>([]);
   private selectedStoreId = signal<number | null>(null);
   private orgNameSignal = signal<string>('');
   private profilePhotoSignal = signal<string | null>(null);
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   readonly storeList = this.stores.asReadonly();
   readonly currentStoreId = this.selectedStoreId.asReadonly();

@@ -6,6 +6,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { ToastService } from '../../../core/services/toast.service';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 @Component({
   selector: 'app-client-detail',
   standalone: true,
@@ -27,7 +29,7 @@ export class ClientDetailComponent implements OnInit {
     address: ''
   };
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(
     private route: ActivatedRoute,

@@ -3,28 +3,42 @@ const logger = require('./logger');
 
 let redis = null;
 
-try {
-  redis = new Redis({
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: parseInt(process.env.REDIS_PORT) || 6379,
-    password: process.env.REDIS_PASSWORD || undefined,
-    maxRetriesPerRequest: 3,
-    retryStrategy(times) {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
-    },
-    lazyConnect: true,
-  });
+// REDIS_HOST absent (cas Render sans Redis) : on n'essaie même pas de se
+// connecter, sinon ioredis retente en boucle et noie les logs d'avertissements.
+if (process.env.REDIS_HOST) {
+  try {
+    redis = new Redis({
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT) || 6379,
+      password: process.env.REDIS_PASSWORD || undefined,
+      maxRetriesPerRequest: 3,
+      retryStrategy(times) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+      lazyConnect: true,
+    });
 
-  redis.on('connect', () => logger.info('Redis connecté'));
-  redis.on('error', (err) => logger.warn({ err: err.message }, 'Redis non disponible — cache désactivé'));
-  redis.on('ready', () => logger.info('Redis prêt'));
+    let warnedOnce = false;
+    redis.on('connect', () => logger.info('Redis connecté'));
+    redis.on('error', (err) => {
+      if (warnedOnce) return; // une seule alerte, pas une par tentative
+      warnedOnce = true;
+      logger.warn({ err: err.message }, 'Redis non disponible — cache désactivé');
+    });
+    redis.on('ready', () => {
+      warnedOnce = false;
+      logger.info('Redis prêt');
+    });
 
-  redis.connect().catch(() => {
-    logger.warn('Redis non disponible — le cache sera désactivé');
-  });
-} catch (err) {
-  logger.warn({ err: err.message }, 'Impossible de se connecter à Redis');
+    redis.connect().catch(() => {
+      logger.warn('Redis non disponible — le cache sera désactivé');
+    });
+  } catch (err) {
+    logger.warn({ err: err.message }, 'Impossible de se connecter à Redis');
+  }
+} else {
+  logger.info('Redis non configuré (REDIS_HOST absent) — cache désactivé');
 }
 
 // Helper: get avec JSON parse

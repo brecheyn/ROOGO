@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
+import { resolveApiBase } from '../api-base';
+
 export interface Category {
     id: string;
     name: string;
@@ -13,7 +15,7 @@ export interface Category {
     providedIn: 'root'
 })
 export class CategoriesService {
-    private apiUrl = '/api/categories';
+    private apiUrl = resolveApiBase() + '/categories';
     private categoriesSubject = new BehaviorSubject<Category[]>([]);
     public categories$ = this.categoriesSubject.asObservable();
 

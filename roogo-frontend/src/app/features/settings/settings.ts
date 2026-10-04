@@ -7,6 +7,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { StoreService } from '../../core/services/store.service';
 
+import { resolveApiBase } from '../../core/api-base';
+
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -65,7 +67,7 @@ export class SettingsComponent implements OnInit {
   showCurrentPw = false;
   showNewPw = false;
   showConfirmPw = false;
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(
     private http: HttpClient,

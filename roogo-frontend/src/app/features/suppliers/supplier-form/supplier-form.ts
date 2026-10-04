@@ -5,6 +5,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 @Component({
   selector: 'app-supplier-form',
   standalone: true,
@@ -23,7 +25,7 @@ export class SupplierFormComponent implements OnInit {
 
   form = { name: '', surname: '', phone: '', address: '' };
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(
     private http: HttpClient,

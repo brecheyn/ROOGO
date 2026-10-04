@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 @Component({
   selector: 'app-client-form',
   standalone: true,
@@ -30,7 +32,7 @@ export class ClientFormComponent implements OnInit {
 
   errors: any = {};
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = resolveApiBase();
 
   constructor(
     private route: ActivatedRoute,

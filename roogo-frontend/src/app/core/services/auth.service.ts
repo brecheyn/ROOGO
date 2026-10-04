@@ -5,10 +5,12 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import { User } from '../../shared/models/user.model'; 
 
+import { resolveApiBase } from '../api-base';
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private API = 'http://localhost:3000/api/auth';
+  private API = resolveApiBase() + '/auth';
   private isBrowser: boolean;
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();

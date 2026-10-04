@@ -18,6 +18,8 @@ import { StoreService } from '../../../core/services/store.service';
 import { ChatbotComponent } from '../chatbot/chatbot';
 import { ToastService } from '../../../core/services/toast.service';
 
+import { resolveApiBase } from '../../../core/api-base';
+
 interface MenuItem {
   icon:       string;
   label:      string;
@@ -103,7 +105,7 @@ export class SidebarComponent implements OnInit {
   }
 
   loadNotifications(): void {
-    this.http.get<StockAlert[]>('http://localhost:3000/api/dashboard/stock-alerts').pipe(
+    this.http.get<StockAlert[]>(resolveApiBase() + '/dashboard/stock-alerts').pipe(
       catchError(() => of([]))
     ).subscribe(alerts => {
       this.notifications = alerts;

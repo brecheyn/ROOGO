@@ -1,6 +1,14 @@
-require("dotenv").config();
-const express = require("express");
 const path = require("path");
+
+// Charge .env quel que soit le dossier de lancement (cwd) :
+//   1) roogo-backend/.env  (fichier de référence, cf. .env.example)
+//   2) .env à la racine du dépôt (repli)
+// Sur Render, les variables proviennent du dashboard et ne sont jamais écrasées.
+require("dotenv").config({
+  path: [path.join(__dirname, ".env"), path.join(__dirname, "..", ".env")],
+});
+
+const express = require("express");
 const fs = require("fs");
 const cors = require("cors");
 const helmet = require("helmet");

@@ -16,6 +16,9 @@ services:
     region: frankfurt     # à ajuster si besoin (oregon, ohio, singapore…)
     branch: main
     buildCommand: npm install
+    # Pour servir aussi le front Angular depuis ce même service, utilisez :
+    #   buildCommand: npm install && npm --prefix roogo-frontend install && npm --prefix roogo-frontend run build
+    # (ou publiez roogo-frontend comme Static Site séparé — voir en bas de fichier)
     startCommand: npm start
     healthCheckPath: /api
     envVars:
@@ -40,6 +43,9 @@ services:
       - key: DB_PASSWORD
         sync: false
       - key: DB_NAME
+        sync: false
+      # true si PostgreSQL exige SSL (Render Postgres, Neon, Supabase…)
+      - key: DB_SSL
         sync: false
       # Redis / Key Value (facultatif — le cache est désactivé si absent)
       - key: REDIS_HOST
@@ -79,3 +85,21 @@ services:
 #     fromDatabase:
 #       name: roogo-db
 #       property: database
+
+# ── Frontend Angular en Static Site séparé (recommandé) ──────────────────────
+# Le backend sert le front uniquement si roogo-frontend/dist/roogo-frontend/browser
+# existe. L'alternative propre : un Static Site dédié, puis mettre son URL dans
+# CORS_ORIGIN du service web ci-dessus.
+#
+# services:
+#   - type: web
+#     name: roogo-frontend
+#     runtime: static
+#     branch: main
+#     rootDir: roogo-frontend
+#     buildCommand: npm install && npm run build
+#     staticPublishPath: dist/roogo-frontend/browser
+#     routes:
+#       - type: rewrite
+#         source: /*
+#         destination: /index.html

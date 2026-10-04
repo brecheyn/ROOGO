@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd roogo-frontend && npm ci",
+  "buildCommand": "cd roogo-frontend && npm run build",
+  "outputDirectory": "roogo-frontend/dist/roogo-frontend/browser",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

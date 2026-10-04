@@ -31,8 +31,11 @@ async function uniqueSlug(baseSlug, client) {
 
 // ── SIGNUP ────────────────────────────────────────────────────────────────────
 exports.signup = async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    // Important : la connexion est prise DANS le try. Sinon, si PostgreSQL est
+    // injoignable, le rejet est non capturé et fait planter le process entier.
+    client = await pool.connect();
     const {
       username,
       email,
@@ -149,15 +152,25 @@ exports.signup = async (req, res) => {
     });
 
   } catch (error) {
-    await client.query('ROLLBACK');
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (rbErr) {
+        console.error('ROLLBACK impossible:', rbErr.message);
+      }
+    }
     console.error('Erreur signup:', error);
-    res.status(500).json({
+    // PostgreSQL injoignable → 503 explicite plutôt qu'un plantage du process
+    const dbDown = !!error && (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT' || error.code === '57P03' || String(error.message || '').includes('ECONNREFUSED'));
+    res.status(dbDown ? 503 : 500).json({
       success: false,
-      message: 'Erreur lors de la création du compte',
+      message: dbDown
+        ? 'Base de données indisponible — réessayez dans quelques instants'
+        : 'Erreur lors de la création du compte',
       error: error.message
     });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 };
 

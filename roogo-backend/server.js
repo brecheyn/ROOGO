@@ -18,6 +18,13 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const logger = require("./src/config/logger");
+
+// Sécurise les rejets de promesse non gérés : un contrôleur async qui throw
+// (ex. « Stock insuffisant ») ne doit pas tuer le process entier (Express 4 ne
+// rattrape pas les erreurs async). On journalise en error, le serveur reste actif.
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "Rejet de promesse non géré — requête échouée, serveur maintenu actif");
+});
 const errorHandler = require("./src/middleware/errorHandler");
 
 const authRoutes = require("./src/routes/authRoutes");
@@ -47,6 +54,24 @@ const financeRoutes = require("./src/routes/financeRoutes");
 const { identifyTenant } = require("./src/middleware/tenant");
 
 const app = express();
+
+// Derrière le proxy Render (+ Cloudflare sur *.onrender.com) : il faut dire à
+// Express de faire confiance aux sauts intermédiaires pour obtenir la vraie IP
+// client. Sans ça, express-rate-limit clé TOUTES les requêtes sur la même IP
+// (tous les utilisateurs partagent le même quota) et journalise
+// ERR_ERL_UNEXPECTED_X_FORWARDED_FOR à chaque appel.
+// On ne fait confiance qu'aux plages internes/Cloudflare : le premier saut non
+// reconnu (l'IP publique du client) est donc retourné, ce qui reste résistant
+// au spoofing d'en-tête X-Forwarded-For.
+app.set("trust proxy", [
+  "loopback",        // sidecar local (127.0.0.1, ::1)
+  "10.0.0.0/8",      // réseau interne Render (10.x)
+  "172.16.0.0/12",   // idem (172.x)
+  "192.168.0.0/16",  // idem (192.168.x)
+  "104.16.0.0/13",   // plages Cloudflare (104.16.0.0 – 104.23.255.255)
+  "172.64.0.0/13",   // plages Cloudflare (172.64.0.0 – 172.71.255.255)
+]);
+
 const server = http.createServer(app);
 
 // Origines CORS (séparées par virgule) — ex: "http://localhost:4200,http://192.168.1.10:4300"

@@ -1,0 +1,81 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Blueprint Render (optionnel) — décrit comment l'API ROOGO doit être buildée
+# et démarrée. Utile si vous gérez le service via "Blueprint" dans Render.
+#
+# Si le service a été créé « à la main » dans le dashboard Render, copiez
+# simplement les valeurs ci-dessous dans Settings > Build & Deploy :
+#   Build Command : npm install
+#   Start Command : npm start          (ou : node roogo-backend/server.js
+#                                       ou : node server.js)
+# ─────────────────────────────────────────────────────────────────────────────
+services:
+  - type: web
+    name: roogo-api
+    runtime: node
+    plan: free            # à ajuster (starter, standard, …)
+    region: frankfurt     # à ajuster si besoin (oregon, ohio, singapore…)
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      # Domaine(s) du front autorisés à appeler l'API (séparés par une virgule)
+      - key: CORS_ORIGIN
+        sync: false
+      # Secret de signature des JWT
+      - key: JWT_SECRET
+        generateValue: true
+      # PostgreSQL — si la base est créée par ce même Blueprint, utilisez
+      # plutôt les références fromDatabase (voir exemples commentés plus bas)
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_NAME
+        sync: false
+      # Redis / Key Value (facultatif — le cache est désactivé si absent)
+      - key: REDIS_HOST
+        sync: false
+      - key: REDIS_PORT
+        sync: false
+      - key: REDIS_PASSWORD
+        sync: false
+
+# Exemple : créer la base PostgreSQL dans le même Blueprint et alimenter les
+# variables d'environnement ci-dessus automatiquement.
+#
+# databases:
+#   - name: roogo-db
+#     plan: free
+#     databaseName: roogo_db
+#     user: roogo
+#
+# puis, dans le service ci-dessus, remplacez les clés DB_* par :
+#   - key: DB_HOST
+#     fromDatabase:
+#       name: roogo-db
+#       property: host
+#   - key: DB_PORT
+#     fromDatabase:
+#       name: roogo-db
+#       property: port
+#   - key: DB_USER
+#     fromDatabase:
+#       name: roogo-db
+#       property: user
+#   - key: DB_PASSWORD
+#     fromDatabase:
+#       name: roogo-db
+#       property: password
+#   - key: DB_NAME
+#     fromDatabase:
+#       name: roogo-db
+#       property: database

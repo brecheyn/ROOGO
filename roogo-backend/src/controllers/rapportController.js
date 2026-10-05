@@ -105,19 +105,37 @@ exports.generateAIReport = async (req, res) => {
       .join(', ');
 
     const stats = recentSalesResult.rows[0];
-    const previsionCA = Math.round(stats.ca_7j * 4.3);
+    const ventes7j = parseInt(stats.ventes_7j, 10) || 0;
+    const ca7j = Math.round(Number(stats.ca_7j) || 0);
+    const panierMoyen = Math.round(Number(stats.panier_moyen) || 0);
+    const previsionCA = Math.round(ca7j * 4.3);
 
     // Générer les prévisions IA
-    const iaPrevision = `
-Basé sur l'analyse des 7 derniers jours :
-- Ventes: ${stats.ventes_7j} transactions
-- Chiffre d'affaires: ${Math.round(stats.ca_7j)} FCFA
-- Panier moyen: ${Math.round(stats.panier_moyen)} FCFA
-- Projection CA mensuel: ${previsionCA} FCFA
-- Tendance: ${stats.ventes_7j > 10 ? 'Positive' : 'À surveiller'}
+    // Sans données, la prévision doit LE DIRE : auparavant elle affichait
+    // toujours « Performance modérée / À surveiller » même à zéro chiffre.
+    const iaPrevision = ventes7j === 0 ? `
+Aucune vente sur les 7 derniers jours — prévision IA indisponible.
+Aucune donnée à analyser : les indicateurs resteront à zéro tant qu'aucune vente n'est enregistrée.
+
+- Ventes: 0 transaction
+- Chiffre d'affaires: 0 FCFA
+- Projection CA mensuel: non calculable (base de calcul vide)
+- Tendance: indéterminée (données insuffisantes)
 
 Recommandations:
-${stats.ventes_7j > 15 ? '- Excellente performance! Maintenir la stratégie actuelle.' : '- Performance modérée. Envisager des promotions.'}
+- Aucune donnée disponible : enregistrez au moins une vente pour activer les prévisions.
+${lowStockResult.rows.length > 5 ? '- URGENT: Réapprovisionner rapidement les articles en rupture.' : (lowStockResult.rows.length > 0 ? '- Des articles ont un stock bas : à surveiller.' : '- Aucun article en stock : commencez par créer vos articles.')}
+${expiringResult.rows.length > 0 ? '- ATTENTION: Des produits arrivent à expiration. Promotions recommandées.' : '- Pas de problème d\'expiration imminent.'}
+    `.trim() : `
+Basé sur l'analyse des 7 derniers jours :
+- Ventes: ${ventes7j} transactions
+- Chiffre d'affaires: ${ca7j} FCFA
+- Panier moyen: ${panierMoyen} FCFA
+- Projection CA mensuel: ${previsionCA} FCFA
+- Tendance: ${ventes7j > 10 ? 'Positive' : 'À surveiller'}
+
+Recommandations:
+${ventes7j > 15 ? '- Excellente performance! Maintenir la stratégie actuelle.' : '- Performance modérée. Envisager des promotions.'}
 ${lowStockResult.rows.length > 5 ? '- URGENT: Réapprovisionner rapidement les articles en rupture.' : '- Stock globalement correct.'}
 ${expiringResult.rows.length > 0 ? '- ATTENTION: Des produits arrivent à expiration. Promotions recommandées.' : '- Pas de problème d\'expiration imminent.'}
     `.trim();

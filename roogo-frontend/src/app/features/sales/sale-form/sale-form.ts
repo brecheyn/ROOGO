@@ -204,8 +204,10 @@ export class SaleFormComponent implements OnInit {
         this.notificationService.success(this.isEditMode ? 'Vente modifiée avec succès' : 'Vente enregistrée avec succès');
         this.router.navigate(['/sales']);
       },
-      error: () => {
-        this.notificationService.error(this.isEditMode ? "Erreur lors de la modification" : "Erreur lors de l'enregistrement");
+      error: (err) => {
+        // Affiche le message réel du serveur (ex. « Stock insuffisant pour X »)
+        const serverMsg = err?.error?.message;
+        this.notificationService.error(serverMsg || (this.isEditMode ? "Erreur lors de la modification" : "Erreur lors de l'enregistrement"));
       },
     });
   }

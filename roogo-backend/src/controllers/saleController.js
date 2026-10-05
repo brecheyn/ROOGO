@@ -134,9 +134,12 @@ exports.getAllSales = async (req, res) => {
 
 // ── POST /api/sales ──────────────────────────────────────────────────────────
 exports.createSale = async (req, res) => {
-  const client = await pool.connect();
+  let client;
 
   try {
+    // Connexion DANS le try : sinon une panne de PostgreSQL tue le process
+    // (ou laisse la requête suspendue indéfiniment).
+    client = await pool.connect();
     const lines = normalizeLines(req.body);
     const id_client = req.body.id_client ?? req.body.clientId ?? null;
     const store_id = req.user.store_id ?? null;
@@ -190,14 +193,23 @@ exports.createSale = async (req, res) => {
       lines: inserted,
     });
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Erreur:', error);
-    res.status(500).json({
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (rbErr) {
+        console.error('ROLLBACK impossible:', rbErr.message);
+      }
+    }
+    console.error('Erreur vente:', error);
+    // Erreurs métier (stock insuffisant, article absent) -> 400,
+    // pour que le client affiche un message compréhensible.
+    const isBusiness = /Stock insuffisant|Article non trouv/i.test(String(error.message || ''));
+    res.status(isBusiness ? 400 : 500).json({
       success: false,
       message: error.message || "Erreur lors de l'enregistrement de la vente"
     });
   } finally {
-    client.release();
+    if (client) client.release();
   }
 };
 

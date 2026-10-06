@@ -130,6 +130,12 @@ exports.deleteArticle = async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur:', error);
+    if (error && error.code === '23503') {
+      return res.status(409).json({
+        success: false,
+        message: "Suppression impossible : cet article est utilisé par des ventes ou des commandes. Archivez-le plutôt que de le supprimer."
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression de l\'article'

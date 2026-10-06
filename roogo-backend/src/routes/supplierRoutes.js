@@ -10,6 +10,6 @@ router.get('/', supplierController.getAllSuppliers);
 router.get('/:id', validate(idParam), supplierController.getSupplierById);
 router.post('/', checkRole([1, 2]), validate(supplierSchema.create), supplierController.createSupplier);
 router.put('/:id', checkRole([1, 2]), validate(supplierSchema.update), supplierController.updateSupplier);
-router.delete('/:id', checkRole([1]), validate(idParam), supplierController.deleteSupplier);
+router.delete('/:id', checkRole([1, 2]), validate(idParam), supplierController.deleteSupplier);
 
 module.exports = router;

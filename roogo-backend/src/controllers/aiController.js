@@ -106,6 +106,23 @@ exports.getRecommendations = async (req, res) => {
     const recommendations = [];
     const orgId = req.organizationId;
 
+    // 0. Cas « démarrage » : aucun article au catalogue. Sans données, l'IA ne
+    // peut rien analyser — on guide l'utilisateur au lieu de renvoyer une liste vide
+    // (qui affiche « Aucune action requise » dans l'interface).
+    const { rows: artCountRows } = await pool.query(
+      'SELECT COUNT(*)::int AS n FROM article WHERE organization_id = $1', [orgId]
+    );
+    if (artCountRows[0].n === 0) {
+      recommendations.push({
+        type: 'setup',
+        priority: 'high',
+        title: 'Catalogue vide : ajoutez vos premiers articles',
+        description: "Votre catalogue ne contient aucun article — l'IA ne peut rien analyser tant qu'il n'y a aucune donnée.",
+        action: 'Créez des articles dans le menu Articles, puis enregistrez une vente : les recommandations apparaîtront ici automatiquement.',
+        item_key: 'setup|empty-catalog',
+      });
+    }
+
     // 1. Articles à réapprovisionner en priorité
     const reorder = await pool.query(`
       SELECT a.id, a.name_article, a.quantity,

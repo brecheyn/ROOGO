@@ -127,6 +127,12 @@ exports.deleteSupplier = async (req, res) => {
     });
   } catch (error) {
     console.error('Erreur:', error);
+    if (error && error.code === '23503') {
+      return res.status(409).json({
+        success: false,
+        message: 'Suppression impossible : ce fournisseur est lié à des articles ou des commandes.'
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la suppression du fournisseur'
